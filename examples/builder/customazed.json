@@ -1,0 +1,41 @@
+{
+  "SubscriptionID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "Storage": {
+    "Location": "westus2",
+    "ResourceGroup": "BuilderRG",
+    "AccountName": "builder12345",
+    "ContainerName": "container"
+  },
+  "Identity": {
+    "Location": "westus2",
+    "ResourceGroup": "BuilderRG",
+    "IdentityName": "identity"
+  },
+  "Builder": {
+    "Location": "westus2",
+    "ResourceGroup": "BuilderRG",
+    "BuilderName": "builder"
+  },
+  "Image": {
+    "Location": "japaneast",
+    "ResourceGroup": "ImageRG",
+    "ImageName": "image"
+  },
+  "Gallery": {
+    "Location": "japaneast",
+    "ResourceGroup": "ImageRG",
+    "GalleryName": "gallery",
+    "GalleryImageName": "image",
+    "Publisher": "myCo",
+    "Offer": "Windows",
+    "SKU": "Win2019",
+    "OSState": "generalized",
+    "OSType": "windows",
+    "ReplicationRegions": [
+      "japanwest",
+      "southeastasia"
+    ],
+    "ExcludeFromLatest": false,
+    "StorageAccountType": "Standard_LRS"
+  }
+}

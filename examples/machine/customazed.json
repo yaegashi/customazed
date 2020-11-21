@@ -1,0 +1,18 @@
+{
+  "SubscriptionID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "Storage": {
+    "Location": "japaneast",
+    "ResourceGroup": "StorageRG",
+    "AccountName": "machine12345",
+    "ContainerName": "container"
+  },
+  "Machine": {
+    "Location": "japaneast",
+    "ResourceGroup": "MachineRG",
+    "MachineName": "machine",
+    "Files": [
+      "install-choco.ps1"
+    ],
+    "Command": "powershell ./install-choco.ps1"
+  }
+}
