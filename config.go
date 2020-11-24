@@ -57,6 +57,8 @@ type BuilderConfig struct {
 }
 
 type AppConfig struct {
+	TenantID       string
+	ClientID       string
 	SubscriptionID string
 	Storage        StorageConfig
 	Identity       IdentityConfig

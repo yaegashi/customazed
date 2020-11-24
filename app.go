@@ -37,16 +37,17 @@ const (
 )
 
 type App struct {
-	Config      AppConfig
-	ConfigStore *store.Store
-	ConfigFile  string
-	ConfigDir   string
-	Client      string
-	Tenant      string
-	Auth        string
-	AuthFile    string
-	AuthDev     string
-	Quiet       bool
+	Config         AppConfig
+	ConfigStore    *store.Store
+	ConfigFile     string
+	ConfigDir      string
+	TenantID       string
+	ClientID       string
+	SubscriptionID string
+	Auth           string
+	AuthFile       string
+	AuthDev        string
+	Quiet          bool
 
 	_ARMToken         *adal.ServicePrincipalToken
 	_StorageToken     *adal.ServicePrincipalToken
@@ -70,8 +71,9 @@ func (app *App) Cmd() *cobra.Command {
 	}
 	cmd.PersistentFlags().StringVarP(&app.ConfigFile, "config-file", "f", "", envHelp("config file", environConfigFile, defaultConfigFile))
 	cmd.PersistentFlags().StringVarP(&app.ConfigDir, "config-dir", "", "", envHelp("config dir", environConfigDir, defaultConfigDir))
-	cmd.PersistentFlags().StringVarP(&app.Client, "client", "", "", envHelp("Azure client", auth.ClientID, defaultClientID))
-	cmd.PersistentFlags().StringVarP(&app.Tenant, "tenant", "", "", envHelp("Azure tenant", auth.TenantID, defaultTenantID))
+	cmd.PersistentFlags().StringVarP(&app.TenantID, "tenant-id", "", "", envHelp("Azure tenant ID", auth.TenantID, defaultTenantID))
+	cmd.PersistentFlags().StringVarP(&app.ClientID, "client-id", "", "", envHelp("Azure client ID", auth.ClientID, defaultClientID))
+	cmd.PersistentFlags().StringVarP(&app.SubscriptionID, "subscription-id", "", "", envHelp("Azure subscription ID", auth.SubscriptionID, ""))
 	cmd.PersistentFlags().StringVarP(&app.Auth, "auth", "", "", envHelp("auth source [dev,env,file]", environAuth, defaultAuth))
 	cmd.PersistentFlags().StringVarP(&app.AuthFile, "auth-file", "", "", envHelp("auth file store", environAuthFile, defaultAuthFile))
 	cmd.PersistentFlags().StringVarP(&app.AuthDev, "auth-dev", "", "", envHelp("auth dev store", environAuthDev, defaultAuthDev))
@@ -94,8 +96,9 @@ func envHelp(msg, env, def string) string {
 }
 
 func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
-	app.Client = envDefault(app.Client, auth.ClientID, defaultClientID)
-	app.Tenant = envDefault(app.Tenant, auth.TenantID, defaultTenantID)
+	app.TenantID = envDefault(app.TenantID, auth.TenantID, defaultTenantID)
+	app.ClientID = envDefault(app.ClientID, auth.ClientID, defaultClientID)
+	app.SubscriptionID = envDefault(app.SubscriptionID, auth.SubscriptionID, "")
 	app.ConfigFile = envDefault(app.ConfigFile, environConfigFile, defaultConfigFile)
 	app.ConfigDir = envDefault(app.ConfigDir, environConfigDir, defaultConfigDir)
 	app.Auth = envDefault(app.Auth, environAuth, defaultAuth)
@@ -116,6 +119,16 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	err = json.Unmarshal(b, &app.Config)
 	if err != nil {
 		return err
+	}
+
+	if app.Config.TenantID == "" {
+		app.Config.TenantID = app.TenantID
+	}
+	if app.Config.ClientID == "" {
+		app.Config.ClientID = app.ClientID
+	}
+	if app.Config.SubscriptionID == "" {
+		app.Config.SubscriptionID = app.SubscriptionID
 	}
 
 	return nil
@@ -188,6 +201,11 @@ func (app *App) AcquireToken() (*adal.ServicePrincipalToken, error) {
 		if err != nil {
 			return nil, err
 		}
+		app.Config.TenantID = settings.Values[auth.TenantID]
+		app.Config.ClientID = settings.Values[auth.ClientID]
+		if app.Config.SubscriptionID == "" {
+			app.Config.SubscriptionID = settings.GetSubscriptionID()
+		}
 		if c, err := settings.GetClientCredentials(); err == nil {
 			return c.ServicePrincipalToken()
 		}
@@ -197,7 +215,10 @@ func (app *App) AcquireToken() (*adal.ServicePrincipalToken, error) {
 		if c, err := settings.GetUsernamePassword(); err == nil {
 			return c.ServicePrincipalToken()
 		}
-		return settings.GetMSI().ServicePrincipalToken()
+		c := settings.GetMSI()
+		app.Config.TenantID = "" // XXX: how to get tenant from MSI?
+		app.Config.ClientID = c.ClientID
+		return c.ServicePrincipalToken()
 	case "file":
 		loc, _ := app.ConfigStore.Location(app.AuthFile, true)
 		app.Logf("Loading auth-file config in %s", loc)
@@ -205,6 +226,11 @@ func (app *App) AcquireToken() (*adal.ServicePrincipalToken, error) {
 		settings, err := auth.GetSettingsFromFile()
 		if err != nil {
 			return nil, err
+		}
+		app.Config.TenantID = settings.Values[auth.TenantID]
+		app.Config.ClientID = settings.Values[auth.ClientID]
+		if app.Config.SubscriptionID == "" {
+			app.Config.SubscriptionID = settings.GetSubscriptionID()
 		}
 		if t, err := settings.ServicePrincipalTokenFromClientCredentials(azure.PublicCloud.ResourceManagerEndpoint); err == nil {
 			return t, nil
@@ -251,7 +277,7 @@ func (app *App) AcquireToken() (*adal.ServicePrincipalToken, error) {
 }
 
 func (app *App) AuthorizeDeviceFlow() (*adal.ServicePrincipalToken, error) {
-	deviceConfig := auth.NewDeviceFlowConfig(app.Client, app.Tenant)
+	deviceConfig := auth.NewDeviceFlowConfig(app.Config.ClientID, app.Config.TenantID)
 	token, err := deviceConfig.ServicePrincipalToken()
 	if err != nil {
 		return nil, err
