@@ -1,4 +1,5 @@
 {
+  "TenantID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
   "SubscriptionID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
   "Storage": {
     "Location": "japaneast",

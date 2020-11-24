@@ -14,6 +14,15 @@ func HasEmpty(items ...string) bool {
 	return false
 }
 
+func FirstNonEmpty(items ...string) string {
+	for _, item := range items {
+		if item != "" {
+			return item
+		}
+	}
+	return ""
+}
+
 func AzureError(err error) *azure.RequestError {
 	if dErr, ok := err.(autorest.DetailedError); ok {
 		if sErr, ok := dErr.Original.(*azure.RequestError); ok {

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/yaegashi/customazed/store"
+	"github.com/yaegashi/customazed/utils"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/msi/mgmt/msi"
@@ -22,18 +23,19 @@ import (
 )
 
 const (
-	defaultClientID   = "a3c13aac-2eb7-4d8a-b7ae-c29b516d566b"
-	defaultTenantID   = "common"
-	environConfigFile = "CUSTOMAZED_CONFIG_FILE"
-	defaultConfigFile = "customazed.json"
-	environConfigDir  = "CUSTOMAZED_CONFIG_DIR"
-	defaultConfigDir  = ".customazed"
-	environAuth       = "CUSTOMAZED_AUTH"
-	defaultAuth       = "dev"
-	environAuthFile   = "CUSTOMAZED_AUTH_FILE"
-	defaultAuthFile   = "auth_file.json"
-	environAuthDev    = "CUSTOMAZED_AUTH_DEV"
-	defaultAuthDev    = "auth_dev.json"
+	defaultTenantID       = "common"
+	defaultClientID       = "a3c13aac-2eb7-4d8a-b7ae-c29b516d566b"
+	defaultSubscriptionID = ""
+	environConfigFile     = "CUSTOMAZED_CONFIG_FILE"
+	defaultConfigFile     = "customazed.json"
+	environConfigDir      = "CUSTOMAZED_CONFIG_DIR"
+	defaultConfigDir      = ".customazed"
+	environAuth           = "CUSTOMAZED_AUTH"
+	defaultAuth           = "dev"
+	environAuthFile       = "CUSTOMAZED_AUTH_FILE"
+	defaultAuthFile       = "auth_file.json"
+	environAuthDev        = "CUSTOMAZED_AUTH_DEV"
+	defaultAuthDev        = "auth_dev.json"
 )
 
 type App struct {
@@ -73,7 +75,7 @@ func (app *App) Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&app.ConfigDir, "config-dir", "", "", envHelp("config dir", environConfigDir, defaultConfigDir))
 	cmd.PersistentFlags().StringVarP(&app.TenantID, "tenant-id", "", "", envHelp("Azure tenant ID", auth.TenantID, defaultTenantID))
 	cmd.PersistentFlags().StringVarP(&app.ClientID, "client-id", "", "", envHelp("Azure client ID", auth.ClientID, defaultClientID))
-	cmd.PersistentFlags().StringVarP(&app.SubscriptionID, "subscription-id", "", "", envHelp("Azure subscription ID", auth.SubscriptionID, ""))
+	cmd.PersistentFlags().StringVarP(&app.SubscriptionID, "subscription-id", "", "", envHelp("Azure subscription ID", auth.SubscriptionID, defaultSubscriptionID))
 	cmd.PersistentFlags().StringVarP(&app.Auth, "auth", "", "", envHelp("auth source [dev,env,file]", environAuth, defaultAuth))
 	cmd.PersistentFlags().StringVarP(&app.AuthFile, "auth-file", "", "", envHelp("auth file store", environAuthFile, defaultAuthFile))
 	cmd.PersistentFlags().StringVarP(&app.AuthDev, "auth-dev", "", "", envHelp("auth dev store", environAuthDev, defaultAuthDev))
@@ -81,29 +83,16 @@ func (app *App) Cmd() *cobra.Command {
 	return cmd
 }
 
-func envDefault(val, env, def string) string {
-	if val == "" {
-		val = os.Getenv(env)
-	}
-	if val == "" {
-		val = def
-	}
-	return val
-}
-
 func envHelp(msg, env, def string) string {
 	return fmt.Sprintf(`%s (env:%s, default:%s)`, msg, env, def)
 }
 
 func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
-	app.TenantID = envDefault(app.TenantID, auth.TenantID, defaultTenantID)
-	app.ClientID = envDefault(app.ClientID, auth.ClientID, defaultClientID)
-	app.SubscriptionID = envDefault(app.SubscriptionID, auth.SubscriptionID, "")
-	app.ConfigFile = envDefault(app.ConfigFile, environConfigFile, defaultConfigFile)
-	app.ConfigDir = envDefault(app.ConfigDir, environConfigDir, defaultConfigDir)
-	app.Auth = envDefault(app.Auth, environAuth, defaultAuth)
-	app.AuthDev = envDefault(app.AuthDev, environAuthDev, defaultAuthDev)
-	app.AuthFile = envDefault(app.AuthFile, environAuthFile, defaultAuthFile)
+	app.ConfigFile = utils.FirstNonEmpty(app.ConfigFile, os.Getenv(environConfigFile), defaultConfigFile)
+	app.ConfigDir = utils.FirstNonEmpty(app.ConfigDir, os.Getenv(environConfigDir), defaultConfigDir)
+	app.Auth = utils.FirstNonEmpty(app.Auth, os.Getenv(environAuth), defaultAuth)
+	app.AuthDev = utils.FirstNonEmpty(app.AuthDev, os.Getenv(environAuthDev), defaultAuthDev)
+	app.AuthFile = utils.FirstNonEmpty(app.AuthFile, os.Getenv(environAuthFile), defaultAuthFile)
 
 	store, err := store.NewStore(app.ConfigDir)
 	if err != nil {
@@ -121,15 +110,9 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if app.Config.TenantID == "" {
-		app.Config.TenantID = app.TenantID
-	}
-	if app.Config.ClientID == "" {
-		app.Config.ClientID = app.ClientID
-	}
-	if app.Config.SubscriptionID == "" {
-		app.Config.SubscriptionID = app.SubscriptionID
-	}
+	app.Config.TenantID = utils.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.Config.TenantID, defaultTenantID)
+	app.Config.ClientID = utils.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.Config.ClientID, defaultClientID)
+	app.Config.SubscriptionID = utils.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.Config.SubscriptionID, defaultSubscriptionID)
 
 	return nil
 }
