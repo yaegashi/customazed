@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/virtualmachineimagebuilder/mgmt/virtualmachineimagebuilder"
@@ -22,7 +22,7 @@ func (app *App) Builder(ctx context.Context) (*virtualmachineimagebuilder.ImageT
 
 func (app *App) BuilderGet(ctx context.Context) error {
 	cfgBuilder := app.Config.Builder
-	if utils.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
+	if ssutil.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
 		app.Log("Builder: missing configuration")
 		return nil
 	}
@@ -35,7 +35,7 @@ func (app *App) BuilderGet(ctx context.Context) error {
 
 func (app *App) BuilderSetup(ctx context.Context) error {
 	cfgBuilder := app.Config.Builder
-	if utils.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
+	if ssutil.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
 		app.Log("Builder: missing configuration")
 		return nil
 	}

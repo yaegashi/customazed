@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/storage/mgmt/storage"
@@ -34,7 +34,7 @@ func (app *App) StorageContainer(ctx context.Context) (*storage.BlobContainer, e
 
 func (app *App) StorageGet(ctx context.Context) error {
 	cfgStorage := app.Config.Storage
-	if utils.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
+	if ssutil.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
 		return nil
 	}
 
@@ -68,7 +68,7 @@ func (app *App) StorageGet(ctx context.Context) error {
 
 func (app *App) StorageSetup(ctx context.Context) error {
 	cfgStorage := app.Config.Storage
-	if utils.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
+	if ssutil.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
 		app.Log("Storage: missing configuration")
 		return nil
 	}

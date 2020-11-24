@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
@@ -31,7 +31,7 @@ func (app *App) GalleryImage(ctx context.Context) (*compute.GalleryImage, error)
 
 func (app *App) GalleryGet(ctx context.Context) error {
 	cfgGallery := app.Config.Gallery
-	if utils.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
+	if ssutil.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
 		app.Log("Gallery: missing configuration")
 		return nil
 	}
@@ -66,7 +66,7 @@ func (app *App) GalleryGet(ctx context.Context) error {
 
 func (app *App) GallerySetup(ctx context.Context) error {
 	cfgGallery := app.Config.Gallery
-	if utils.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
+	if ssutil.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
 		app.Log("Gallery: missing configuration")
 		return nil
 	}

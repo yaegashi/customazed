@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/msi/mgmt/msi"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
@@ -21,7 +21,7 @@ func (app *App) Identity(ctx context.Context) (*msi.Identity, error) {
 
 func (app *App) IdentityGet(ctx context.Context) error {
 	cfgIdentity := app.Config.Identity
-	if utils.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
+	if ssutil.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
 		return nil
 	}
 
@@ -45,7 +45,7 @@ func (app *App) IdentityGet(ctx context.Context) error {
 
 func (app *App) IdentitySetup(ctx context.Context) error {
 	cfgIdentity := app.Config.Identity
-	if utils.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
+	if ssutil.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
 		app.Log("Identity: missing configuration")
 		return nil
 	}

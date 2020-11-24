@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -33,7 +33,7 @@ func (app *App) Machine(ctx context.Context) (*compute.VirtualMachine, error) {
 
 func (app *App) MachineGet(ctx context.Context) error {
 	cfgMachine := app.Config.Machine
-	if utils.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
+	if ssutil.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
 		app.Log("Machine: missing configuration")
 		return nil
 	}
@@ -58,7 +58,7 @@ func (app *App) MachineGet(ctx context.Context) error {
 
 func (app *App) MachineSetup(ctx context.Context) error {
 	cfgMachine := app.Config.Machine
-	if utils.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
+	if ssutil.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
 		app.Log("Machine: missing configuration")
 		return nil
 	}

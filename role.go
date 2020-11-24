@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/azutil"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -79,7 +79,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			}
 			_, err = roleAssignmentsClient.Create(ctx, *container.ID, uuid.New().String(), roleAssignmentParams)
 			if err != nil {
-				if aErr := utils.AzureError(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
+				if aErr := azutil.Error(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
 					return err
 				}
 			}
@@ -94,7 +94,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			}
 			_, err = roleAssignmentsClient.Create(ctx, *container.ID, uuid.New().String(), roleAssignmentParams)
 			if err != nil {
-				if aErr := utils.AzureError(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
+				if aErr := azutil.Error(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
 					return err
 				}
 			}
@@ -109,7 +109,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			}
 			_, err = roleAssignmentsClient.Create(ctx, *container.ID, uuid.New().String(), roleAssignmentParams)
 			if err != nil {
-				if aErr := utils.AzureError(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
+				if aErr := azutil.Error(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
 					return err
 				}
 			}
@@ -156,7 +156,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			groupScope := fmt.Sprintf("%s/resourceGroups/%s", subscriptionScope, app.Config.Image.ResourceGroup)
 			_, err = roleAssignmentsClient.Create(ctx, groupScope, uuid.New().String(), roleAssignmentParams)
 			if err != nil {
-				if aErr := utils.AzureError(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
+				if aErr := azutil.Error(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
 					return err
 				}
 			}
@@ -165,7 +165,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			app.Logf("Role: assign role to identity for gallery")
 			_, err = roleAssignmentsClient.Create(ctx, *gallery.ID, uuid.New().String(), roleAssignmentParams)
 			if err != nil {
-				if aErr := utils.AzureError(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
+				if aErr := azutil.Error(err); aErr == nil || aErr.ServiceError.Code != "RoleAssignmentExists" {
 					return err
 				}
 			}

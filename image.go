@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
@@ -22,7 +22,7 @@ func (app *App) Image(ctx context.Context) (*compute.Image, error) {
 
 func (app *App) ImageGet(ctx context.Context) error {
 	cfgImage := app.Config.Image
-	if utils.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
+	if ssutil.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
 		app.Log("Image: missing configuration")
 		return nil
 	}
@@ -35,7 +35,7 @@ func (app *App) ImageGet(ctx context.Context) error {
 
 func (app *App) ImageSetup(ctx context.Context) error {
 	cfgImage := app.Config.Image
-	if utils.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
+	if ssutil.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
 		app.Log("Image: missing configuration")
 		return nil
 	}

@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/yaegashi/customazed/store"
-	"github.com/yaegashi/customazed/utils"
+	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/msi/mgmt/msi"
@@ -88,11 +88,11 @@ func envHelp(msg, env, def string) string {
 }
 
 func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
-	app.ConfigFile = utils.FirstNonEmpty(app.ConfigFile, os.Getenv(environConfigFile), defaultConfigFile)
-	app.ConfigDir = utils.FirstNonEmpty(app.ConfigDir, os.Getenv(environConfigDir), defaultConfigDir)
-	app.Auth = utils.FirstNonEmpty(app.Auth, os.Getenv(environAuth), defaultAuth)
-	app.AuthDev = utils.FirstNonEmpty(app.AuthDev, os.Getenv(environAuthDev), defaultAuthDev)
-	app.AuthFile = utils.FirstNonEmpty(app.AuthFile, os.Getenv(environAuthFile), defaultAuthFile)
+	app.ConfigFile = ssutil.FirstNonEmpty(app.ConfigFile, os.Getenv(environConfigFile), defaultConfigFile)
+	app.ConfigDir = ssutil.FirstNonEmpty(app.ConfigDir, os.Getenv(environConfigDir), defaultConfigDir)
+	app.Auth = ssutil.FirstNonEmpty(app.Auth, os.Getenv(environAuth), defaultAuth)
+	app.AuthDev = ssutil.FirstNonEmpty(app.AuthDev, os.Getenv(environAuthDev), defaultAuthDev)
+	app.AuthFile = ssutil.FirstNonEmpty(app.AuthFile, os.Getenv(environAuthFile), defaultAuthFile)
 
 	store, err := store.NewStore(app.ConfigDir)
 	if err != nil {
@@ -110,9 +110,9 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	app.Config.TenantID = utils.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.Config.TenantID, defaultTenantID)
-	app.Config.ClientID = utils.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.Config.ClientID, defaultClientID)
-	app.Config.SubscriptionID = utils.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.Config.SubscriptionID, defaultSubscriptionID)
+	app.Config.TenantID = ssutil.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.Config.TenantID, defaultTenantID)
+	app.Config.ClientID = ssutil.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.Config.ClientID, defaultClientID)
+	app.Config.SubscriptionID = ssutil.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.Config.SubscriptionID, defaultSubscriptionID)
 
 	return nil
 }
@@ -147,24 +147,12 @@ func (app *App) StorageToken() (*adal.ServicePrincipalToken, error) {
 	return app._StorageToken, nil
 }
 
-func (app *App) GetAuthorizer() (autorest.Authorizer, error) {
-	return app.GetAuthorizerWithResource(azure.PublicCloud.ResourceManagerEndpoint)
-}
-
-func (app *App) GetAuthorizerWithResource(resource string) (autorest.Authorizer, error) {
-	token, err := app.GetTokenWithResource(resource)
-	if err != nil {
-		return nil, err
-	}
-	return autorest.NewBearerAuthorizer(token), nil
-}
-
 func (app *App) GetToken() (*adal.ServicePrincipalToken, error) {
 	return app.GetTokenWithResource(azure.PublicCloud.ResourceManagerEndpoint)
 }
 
 func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalToken, error) {
-	token, err := app.AcquireToken()
+	token, err := app.Authorize()
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +165,7 @@ func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalTok
 	return token, nil
 }
 
-func (app *App) AcquireToken() (*adal.ServicePrincipalToken, error) {
+func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 	switch app.Auth {
 	case "env":
 		settings, err := auth.GetSettingsFromEnvironment()
