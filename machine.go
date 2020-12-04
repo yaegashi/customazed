@@ -9,10 +9,11 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-func NewWindowsCustomScriptExtension(location string) *compute.VirtualMachineExtension {
+func NewWindowsCustomScriptExtension(location string, tag string) *compute.VirtualMachineExtension {
 	return &compute.VirtualMachineExtension{
-		Location: to.StringPtr(location),
+		Location: &location,
 		VirtualMachineExtensionProperties: &compute.VirtualMachineExtensionProperties{
+			ForceUpdateTag:          &tag,
 			Publisher:               to.StringPtr("Microsoft.Compute"),
 			Type:                    to.StringPtr("CustomScriptExtension"),
 			TypeHandlerVersion:      to.StringPtr("1.10"),

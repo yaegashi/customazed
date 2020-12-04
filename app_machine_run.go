@@ -68,7 +68,7 @@ func (app *AppMachineRun) RunE(cmd *cobra.Command, args []string) error {
 		fileURIs = append(fileURIs, blobURL.String())
 	}
 
-	extensionParams := NewWindowsCustomScriptExtension(app.Config.Machine.Location)
+	extensionParams := NewWindowsCustomScriptExtension(app.Config.Machine.Location, app.Config.Machine.ForceUpdateTag)
 	extensionParams.ProtectedSettings = map[string]interface{}{
 		"fileURIs":         fileURIs,
 		"commandToExecute": app.Config.Machine.Command,

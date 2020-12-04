@@ -17,12 +17,13 @@ type IdentityConfig struct {
 }
 
 type MachineConfig struct {
-	Location      string
-	ResourceGroup string
-	MachineName   string
-	MachineID     string
-	Files         []string
-	Command       string
+	Location       string
+	ResourceGroup  string
+	MachineName    string
+	MachineID      string
+	Files          []string
+	Command        string
+	ForceUpdateTag string
 }
 
 type ImageConfig struct {
