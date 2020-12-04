@@ -70,6 +70,7 @@ func (app *App) Cmd() *cobra.Command {
 		Short:             "Customazed CLI - Azure VM Custom Script Helper",
 		PersistentPreRunE: app.PersistentPreRunE,
 		SilenceUsage:      true,
+		Version:           fmt.Sprintf("%s (%-0.7s)", version, commit),
 	}
 	cmd.PersistentFlags().StringVarP(&app.ConfigFile, "config-file", "f", "", envHelp("config file", environConfigFile, defaultConfigFile))
 	cmd.PersistentFlags().StringVarP(&app.ConfigDir, "config-dir", "", "", envHelp("config dir", environConfigDir, defaultConfigDir))
