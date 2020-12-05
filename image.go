@@ -20,10 +20,17 @@ func (app *App) Image(ctx context.Context) (*compute.Image, error) {
 	return app._Image, nil
 }
 
-func (app *App) ImageGet(ctx context.Context) error {
-	cfgImage := app.Config.Image
-	if ssutil.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
+func (app *App) ImageValid() bool {
+	cfg := app.Config.Image
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.ImageName) {
 		app.Log("Image: missing configuration")
+		return false
+	}
+	return true
+}
+
+func (app *App) ImageGet(ctx context.Context) error {
+	if !app.ImageValid() {
 		return nil
 	}
 
@@ -34,9 +41,7 @@ func (app *App) ImageGet(ctx context.Context) error {
 }
 
 func (app *App) ImageSetup(ctx context.Context) error {
-	cfgImage := app.Config.Image
-	if ssutil.HasEmpty(cfgImage.Location, cfgImage.ResourceGroup, cfgImage.ImageName) {
-		app.Log("Image: missing configuration")
+	if !app.ImageValid() {
 		return nil
 	}
 

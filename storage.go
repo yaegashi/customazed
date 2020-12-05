@@ -32,9 +32,17 @@ func (app *App) StorageContainer(ctx context.Context) (*storage.BlobContainer, e
 	return app._StorageContainer, nil
 }
 
+func (app *App) StorageValid() bool {
+	cfg := app.Config.Storage
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.AccountName, cfg.ContainerName) {
+		app.Log("Storage: missing configuration")
+		return false
+	}
+	return true
+}
+
 func (app *App) StorageGet(ctx context.Context) error {
-	cfgStorage := app.Config.Storage
-	if ssutil.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
+	if !app.StorageValid() {
 		return nil
 	}
 
@@ -67,9 +75,7 @@ func (app *App) StorageGet(ctx context.Context) error {
 }
 
 func (app *App) StorageSetup(ctx context.Context) error {
-	cfgStorage := app.Config.Storage
-	if ssutil.HasEmpty(cfgStorage.Location, cfgStorage.ResourceGroup, cfgStorage.AccountName, cfgStorage.ContainerName) {
-		app.Log("Storage: missing configuration")
+	if !app.StorageValid() {
 		return nil
 	}
 
@@ -123,6 +129,10 @@ func (app *App) StorageSetup(ctx context.Context) error {
 }
 
 func (app *App) StorageUpload(ctx context.Context, path string) (string, error) {
+	if !app.StorageValid() {
+		return "", nil
+	}
+
 	uploadMap := app.StorageMap()
 	if _, ok := uploadMap[path]; ok {
 		return "", nil

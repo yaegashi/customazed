@@ -19,9 +19,17 @@ func (app *App) Identity(ctx context.Context) (*msi.Identity, error) {
 	return app._Identity, nil
 }
 
+func (app *App) IdentityValid() bool {
+	cfg := app.Config.Identity
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.IdentityName) {
+		app.Log("Identity: missing configuration")
+		return false
+	}
+	return true
+}
+
 func (app *App) IdentityGet(ctx context.Context) error {
-	cfgIdentity := app.Config.Identity
-	if ssutil.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
+	if !app.IdentityValid() {
 		return nil
 	}
 
@@ -44,9 +52,7 @@ func (app *App) IdentityGet(ctx context.Context) error {
 }
 
 func (app *App) IdentitySetup(ctx context.Context) error {
-	cfgIdentity := app.Config.Identity
-	if ssutil.HasEmpty(cfgIdentity.Location, cfgIdentity.ResourceGroup, cfgIdentity.IdentityName) {
-		app.Log("Identity: missing configuration")
+	if !app.IdentityValid() {
 		return nil
 	}
 

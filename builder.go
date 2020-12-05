@@ -20,10 +20,17 @@ func (app *App) Builder(ctx context.Context) (*virtualmachineimagebuilder.ImageT
 	return app._Builder, nil
 }
 
-func (app *App) BuilderGet(ctx context.Context) error {
-	cfgBuilder := app.Config.Builder
-	if ssutil.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
+func (app *App) BuilderValid() bool {
+	cfg := app.Config.Builder
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.BuilderName) {
 		app.Log("Builder: missing configuration")
+		return false
+	}
+	return true
+}
+
+func (app *App) BuilderGet(ctx context.Context) error {
+	if !app.BuilderValid() {
 		return nil
 	}
 
@@ -34,9 +41,7 @@ func (app *App) BuilderGet(ctx context.Context) error {
 }
 
 func (app *App) BuilderSetup(ctx context.Context) error {
-	cfgBuilder := app.Config.Builder
-	if ssutil.HasEmpty(cfgBuilder.Location, cfgBuilder.ResourceGroup, cfgBuilder.BuilderName) {
-		app.Log("Builder: missing configuration")
+	if !app.BuilderValid() {
 		return nil
 	}
 

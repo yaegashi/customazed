@@ -29,10 +29,17 @@ func (app *App) GalleryImage(ctx context.Context) (*compute.GalleryImage, error)
 	return app._GalleryImage, nil
 }
 
-func (app *App) GalleryGet(ctx context.Context) error {
-	cfgGallery := app.Config.Gallery
-	if ssutil.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
+func (app *App) GalleryValid() bool {
+	cfg := app.Config.Gallery
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.GalleryName, cfg.GalleryImageName, cfg.Publisher, cfg.Offer, cfg.SKU) {
 		app.Log("Gallery: missing configuration")
+		return false
+	}
+	return true
+}
+
+func (app *App) GalleryGet(ctx context.Context) error {
+	if !app.GalleryValid() {
 		return nil
 	}
 
@@ -65,9 +72,7 @@ func (app *App) GalleryGet(ctx context.Context) error {
 }
 
 func (app *App) GallerySetup(ctx context.Context) error {
-	cfgGallery := app.Config.Gallery
-	if ssutil.HasEmpty(cfgGallery.Location, cfgGallery.ResourceGroup, cfgGallery.GalleryName, cfgGallery.GalleryImageName) {
-		app.Log("Gallery: missing configuration")
+	if !app.GalleryValid() {
 		return nil
 	}
 

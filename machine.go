@@ -32,10 +32,17 @@ func (app *App) Machine(ctx context.Context) (*compute.VirtualMachine, error) {
 	return app._Machine, nil
 }
 
-func (app *App) MachineGet(ctx context.Context) error {
-	cfgMachine := app.Config.Machine
-	if ssutil.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
+func (app *App) MachineValid() bool {
+	cfg := app.Config.Machine
+	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.MachineName) {
 		app.Log("Machine: missing configuration")
+		return false
+	}
+	return true
+}
+
+func (app *App) MachineGet(ctx context.Context) error {
+	if !app.MachineValid() {
 		return nil
 	}
 
@@ -58,9 +65,7 @@ func (app *App) MachineGet(ctx context.Context) error {
 }
 
 func (app *App) MachineSetup(ctx context.Context) error {
-	cfgMachine := app.Config.Machine
-	if ssutil.HasEmpty(cfgMachine.Location, cfgMachine.ResourceGroup, cfgMachine.MachineName) {
-		app.Log("Machine: missing configuration")
+	if !app.MachineValid() {
 		return nil
 	}
 

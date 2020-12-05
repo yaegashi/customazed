@@ -20,12 +20,12 @@ const (
 	RoleNameImageCreator               = "d3d5cf35-0954-4711-b01a-faa4800979d5"
 )
 
-func (app *App) RoleID(name string) *string {
-	s := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.Config.SubscriptionID, name)
-	return &s
-}
-
 func (app *App) RoleSetup(ctx context.Context) error {
+	roleID := func(name string) *string {
+		s := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.Config.SubscriptionID, name)
+		return &s
+	}
+
 	container, err := app.StorageContainer(ctx)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			app.Logf("Role: assign role to user for blob container")
 			roleAssignmentParams := authorization.RoleAssignmentCreateParameters{
 				RoleAssignmentProperties: &authorization.RoleAssignmentProperties{
-					RoleDefinitionID: app.RoleID(RoleNameStorageBlobDataOwner),
+					RoleDefinitionID: roleID(RoleNameStorageBlobDataOwner),
 					PrincipalID:      &oid,
 				},
 			}
@@ -88,7 +88,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			app.Logf("Role: assign role to identity for blob container")
 			roleAssignmentParams := authorization.RoleAssignmentCreateParameters{
 				RoleAssignmentProperties: &authorization.RoleAssignmentProperties{
-					RoleDefinitionID: app.RoleID(RoleNameStorageBlobDataReader),
+					RoleDefinitionID: roleID(RoleNameStorageBlobDataReader),
 					PrincipalID:      to.StringPtr(identity.PrincipalID.String()),
 				},
 			}
@@ -103,7 +103,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 			app.Logf("Role: assign role to machine for blob container")
 			roleAssignmentParams := authorization.RoleAssignmentCreateParameters{
 				RoleAssignmentProperties: &authorization.RoleAssignmentProperties{
-					RoleDefinitionID: app.RoleID(RoleNameStorageBlobDataReader),
+					RoleDefinitionID: roleID(RoleNameStorageBlobDataReader),
 					PrincipalID:      machine.Identity.PrincipalID,
 				},
 			}
