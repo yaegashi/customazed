@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,7 +40,8 @@ const (
 )
 
 type App struct {
-	Config         AppConfig
+	Config         *Config
+	ConfigLoad     *Config
 	ConfigStore    *store.Store
 	ConfigFile     string
 	ConfigDir      string
@@ -105,19 +107,25 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 	app.ConfigStore = store
 
-	app.Logf("Reading config file %s", app.ConfigFile)
+	app.Logf("Loading config file %s", app.ConfigFile)
 	b, err := ioutil.ReadFile(app.ConfigFile)
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(b, &app.Config)
+	err = json.Unmarshal(b, &app.ConfigLoad)
 	if err != nil {
 		return err
 	}
 
-	app.Config.TenantID = ssutil.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.Config.TenantID, defaultTenantID)
-	app.Config.ClientID = ssutil.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.Config.ClientID, defaultClientID)
-	app.Config.SubscriptionID = ssutil.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.Config.SubscriptionID, defaultSubscriptionID)
+	app.ConfigLoad.TenantID = ssutil.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.ConfigLoad.TenantID, defaultTenantID)
+	app.ConfigLoad.ClientID = ssutil.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.ConfigLoad.ClientID, defaultClientID)
+	app.ConfigLoad.SubscriptionID = ssutil.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.ConfigLoad.SubscriptionID, defaultSubscriptionID)
+
+	cfg, err := app.TemplateResolve(context.Background(), app.ConfigLoad)
+	if err != nil {
+		return err
+	}
+	app.Config = cfg.(*Config)
 
 	return nil
 }

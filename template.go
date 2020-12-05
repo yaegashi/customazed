@@ -34,10 +34,10 @@ func (app *App) TemplateExecute(ctx context.Context, in []byte) ([]byte, error) 
 			return app.StorageUpload(ctx, key)
 		}),
 		"cfg": tv.NewFunc("cfg", func(key string) (string, error) {
-			return reflectutil.Get(app.Config, key)
+			return reflectutil.Get(app.ConfigLoad, key)
 		}),
 		"var": tv.NewFunc("var", func(key string) (string, error) {
-			return reflectutil.Get(app.Config.Variables, key)
+			return reflectutil.Get(app.ConfigLoad.Variables, key)
 		}),
 		"env": tv.NewFunc("env", func(key string) (string, error) {
 			if val, ok := os.LookupEnv(key); ok {

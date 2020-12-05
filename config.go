@@ -1,70 +1,78 @@
 package main
 
+// StorageConfig is configuration for storage account and blob container
 type StorageConfig struct {
-	Location      string
-	ResourceGroup string
-	AccountName   string
-	AccountID     string
-	ContainerName string
-	ContainerID   string
+	Location      string `json:"location,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	AccountName   string `json:"accountName,omitempty"`
+	AccountID     string `json:"accountId,omitempty"`
+	ContainerName string `json:"containerName,omitempty"`
+	ContainerID   string `json:"containerId,omitempty"`
 }
 
+// IdentityConfig is configuration for user assigned identity
 type IdentityConfig struct {
-	Location      string
-	ResourceGroup string
-	IdentityName  string
-	IdentityID    string
+	Location      string `json:"location,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	IdentityName  string `json:"identityName,omitempty"`
+	IdentityID    string `json:"identityId,omitempty"`
 }
 
+// MachineConfig is configuration for virtual machine
 type MachineConfig struct {
-	Location       string
-	ResourceGroup  string
-	MachineName    string
-	MachineID      string
-	Files          []string
-	Command        string
-	ForceUpdateTag string
+	Location       string   `json:"location,omitempty"`
+	ResourceGroup  string   `json:"resourceGroup,omitempty"`
+	MachineName    string   `json:"machineName,omitempty"`
+	MachineID      string   `json:"machineId,omitempty"`
+	Files          []string `json:"files,omitempty"`
+	Command        string   `json:"command,omitempty"`
+	ForceUpdateTag string   `json:"forceUpdateTag,omitempty"`
 }
 
+// ImageConfig is configuration for managed image
 type ImageConfig struct {
-	Location      string
-	ResourceGroup string
-	ImageName     string
-	ImageID       string
+	Location      string `json:"location,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	ImageName     string `json:"imageName,omitempty"`
+	ImageID       string `json:"imageId,omitempty"`
 }
 
+// GalleryConfig is configuration for shared image gallery
 type GalleryConfig struct {
-	Location           string
-	ResourceGroup      string
-	GalleryName        string
-	GalleryID          string
-	GalleryImageName   string
-	GalleryImageID     string
-	Publisher          string
-	Offer              string
-	SKU                string
-	OSState            string
-	OSType             string
-	ReplicationRegions []string
-	ExcludeFromLatest  bool
-	StorageAccountType string
+	Location           string   `json:"location,omitempty"`
+	ResourceGroup      string   `json:"resourceGroup,omitempty"`
+	GalleryName        string   `json:"galleryName,omitempty"`
+	GalleryID          string   `json:"galleryId,omitempty"`
+	GalleryImageName   string   `json:"galleryImageName,omitempty"`
+	GalleryImageID     string   `json:"galleryImageId,omitempty"`
+	Publisher          string   `json:"publisher,omitempty"`
+	Offer              string   `json:"offer,omitempty"`
+	SKU                string   `json:"sku,omitempty"`
+	OSState            string   `json:"osState,omitempty"`
+	OSType             string   `json:"osType,omitempty"`
+	ReplicationRegions []string `json:"replicationRegions,omitempty"`
+	ExcludeFromLatest  bool     `json:"excludeFromLatest,omitempty"`
+	StorageAccountType string   `json:"storageAccountType,omitempty"`
 }
 
+// BuilderConfig is configuration for image template
 type BuilderConfig struct {
-	Location      string
-	ResourceGroup string
-	BuilderName   string
-	BuilderID     string
+	Location      string `json:"location,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	BuilderName   string `json:"builderName,omitempty"`
+	BuilderID     string `json:"builderId,omitempty"`
 }
 
-type AppConfig struct {
-	TenantID       string
-	ClientID       string
-	SubscriptionID string
-	Storage        StorageConfig
-	Identity       IdentityConfig
-	Machine        MachineConfig
-	Image          ImageConfig
-	Gallery        GalleryConfig
-	Builder        BuilderConfig
+// Config is configuration for application
+type Config struct {
+	TenantID       string            `json:"tenantId,omitempty"`
+	ClientID       string            `json:"clientId,omitempty"`
+	SubscriptionID string            `json:"subscriptionId,omitempty"`
+	Variables      map[string]string `json:"variables,omitempty"`
+	Storage        StorageConfig     `json:"storage,omitempty"`
+	Identity       IdentityConfig    `json:"identity,omitempty"`
+	Machine        MachineConfig     `json:"machine,omitempty"`
+	Image          ImageConfig       `json:"image,omitempty"`
+	Gallery        GalleryConfig     `json:"gallery,omitempty"`
+	Builder        BuilderConfig     `json:"builder,omitempty"`
 }
