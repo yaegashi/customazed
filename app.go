@@ -50,6 +50,7 @@ type App struct {
 	AuthFile       string
 	AuthDev        string
 	Quiet          bool
+	NoLogin        bool
 
 	_ARMToken         *adal.ServicePrincipalToken
 	_StorageToken     *adal.ServicePrincipalToken
@@ -81,6 +82,7 @@ func (app *App) Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&app.AuthFile, "auth-file", "", "", envHelp("auth file store", environAuthFile, defaultAuthFile))
 	cmd.PersistentFlags().StringVarP(&app.AuthDev, "auth-dev", "", "", envHelp("auth dev store", environAuthDev, defaultAuthDev))
 	cmd.PersistentFlags().BoolVarP(&app.Quiet, "quiet", "q", false, "quiet")
+	cmd.PersistentFlags().BoolVarP(&app.NoLogin, "no-login", "", false, "disable login")
 	return cmd
 }
 
@@ -167,6 +169,9 @@ func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalTok
 }
 
 func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
+	if app.NoLogin {
+		return nil, fmt.Errorf("Login disabled")
+	}
 	switch app.Auth {
 	case "env":
 		settings, err := auth.GetSettingsFromEnvironment()
@@ -249,6 +254,9 @@ func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 }
 
 func (app *App) AuthorizeDeviceFlow() (*adal.ServicePrincipalToken, error) {
+	if app.NoLogin {
+		return nil, fmt.Errorf("Login disabled")
+	}
 	deviceConfig := auth.NewDeviceFlowConfig(app.Config.ClientID, app.Config.TenantID)
 	token, err := deviceConfig.ServicePrincipalToken()
 	if err != nil {
