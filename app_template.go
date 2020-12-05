@@ -44,27 +44,29 @@ func (app *AppTemplate) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	_, err = app.ARMToken()
-	if err != nil {
-		return err
-	}
-	_, err = app.StorageToken()
-	if err != nil {
-		return err
-	}
-
 	ctx := context.Background()
-	_, err = app.StorageAccount(ctx)
-	if err != nil {
-		return err
-	}
-	_, err = app.Identity(ctx)
-	if err != nil {
-		return err
-	}
-	_, err = app.Image(ctx)
-	if err != nil {
-		return err
+
+	if !app.NoLogin {
+		_, err = app.ARMToken()
+		if err != nil {
+			return err
+		}
+		_, err = app.StorageToken()
+		if err != nil {
+			return err
+		}
+		_, err = app.StorageAccount(ctx)
+		if err != nil {
+			return err
+		}
+		_, err = app.Identity(ctx)
+		if err != nil {
+			return err
+		}
+		_, err = app.Image(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	outBuf, err := app.TemplateExecute(ctx, inBuf)

@@ -63,6 +63,8 @@ type App struct {
 	_Image            *compute.Image
 	_Gallery          *compute.Gallery
 	_GalleryImage     *compute.GalleryImage
+	_TemplateRef      map[string]bool
+	_TemplateCache    map[string]string
 }
 
 func (app *App) Cmd() *cobra.Command {
