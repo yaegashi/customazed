@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/yaegashi/customazed/store"
 	"github.com/yaegashi/customazed/utils/ssutil"
 
@@ -37,6 +38,12 @@ const (
 	defaultAuthFile       = "auth_file.json"
 	environAuthDev        = "CUSTOMAZED_AUTH_DEV"
 	defaultAuthDev        = "auth_dev.json"
+	environHashNS         = "CUSTOMAZED_HASHNS"
+	defaultHashNS         = "random"
+)
+
+var (
+	initialHashNS = uuid.Must(uuid.Parse("0ca24621-d049-4455-84cf-4c3f7c3875df"))
 )
 
 type App struct {
@@ -45,6 +52,7 @@ type App struct {
 	ConfigStore    *store.Store
 	ConfigFile     string
 	ConfigDir      string
+	HashNS         string
 	TenantID       string
 	ClientID       string
 	SubscriptionID string
@@ -67,6 +75,7 @@ type App struct {
 	_GalleryImage     *compute.GalleryImage
 	_TemplateRef      map[string]bool
 	_TemplateCache    map[string]string
+	_HashNS           uuid.UUID
 }
 
 func (app *App) Cmd() *cobra.Command {
@@ -82,6 +91,7 @@ func (app *App) Cmd() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&app.TenantID, "tenant-id", "", "", envHelp("Azure tenant ID", auth.TenantID, defaultTenantID))
 	cmd.PersistentFlags().StringVarP(&app.ClientID, "client-id", "", "", envHelp("Azure client ID", auth.ClientID, defaultClientID))
 	cmd.PersistentFlags().StringVarP(&app.SubscriptionID, "subscription-id", "", "", envHelp("Azure subscription ID", auth.SubscriptionID, defaultSubscriptionID))
+	cmd.PersistentFlags().StringVarP(&app.HashNS, "hash-ns", "", "", envHelp("Hash namespace", environHashNS, defaultHashNS))
 	cmd.PersistentFlags().StringVarP(&app.Auth, "auth", "", "", envHelp("auth source [dev,env,file]", environAuth, defaultAuth))
 	cmd.PersistentFlags().StringVarP(&app.AuthFile, "auth-file", "", "", envHelp("auth file store", environAuthFile, defaultAuthFile))
 	cmd.PersistentFlags().StringVarP(&app.AuthDev, "auth-dev", "", "", envHelp("auth dev store", environAuthDev, defaultAuthDev))
@@ -120,6 +130,7 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	app.ConfigLoad.TenantID = ssutil.FirstNonEmpty(app.TenantID, os.Getenv(auth.TenantID), app.ConfigLoad.TenantID, defaultTenantID)
 	app.ConfigLoad.ClientID = ssutil.FirstNonEmpty(app.ClientID, os.Getenv(auth.ClientID), app.ConfigLoad.ClientID, defaultClientID)
 	app.ConfigLoad.SubscriptionID = ssutil.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.ConfigLoad.SubscriptionID, defaultSubscriptionID)
+	app.ConfigLoad.HashNS = ssutil.FirstNonEmpty(app.HashNS, os.Getenv(environHashNS), app.ConfigLoad.HashNS, uuid.New().String())
 
 	cfg, err := app.TemplateResolve(context.Background(), app.ConfigLoad)
 	if err != nil {
@@ -127,7 +138,13 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 	app.Config = cfg.(*Config)
 
+	app._HashNS = uuid.NewSHA1(initialHashNS, []byte(app.Config.HashNS))
+
 	return nil
+}
+
+func (app *App) HashID(s string) string {
+	return uuid.NewSHA1(app._HashNS, []byte(s)).String()
 }
 
 func (app *App) ARMAuthorizer() (autorest.Authorizer, error) {

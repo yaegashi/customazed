@@ -68,6 +68,7 @@ type Config struct {
 	TenantID       string            `json:"tenantId,omitempty"`
 	ClientID       string            `json:"clientId,omitempty"`
 	SubscriptionID string            `json:"subscriptionId,omitempty"`
+	HashNS         string            `json:"hashNS,omitempty"`
 	Variables      map[string]string `json:"variables,omitempty"`
 	Storage        StorageConfig     `json:"storage,omitempty"`
 	Identity       IdentityConfig    `json:"identity,omitempty"`
