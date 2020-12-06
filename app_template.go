@@ -34,15 +34,16 @@ func (app *AppTemplate) Cmd() *cobra.Command {
 
 func (app *AppTemplate) RunE(cmd *cobra.Command, args []string) error {
 	var err error
-	var inBuf []byte
+	var buf []byte
 	if app.Input == "-" {
-		inBuf, err = ioutil.ReadAll(os.Stdin)
+		buf, err = ioutil.ReadAll(os.Stdin)
 	} else {
-		inBuf, err = ioutil.ReadFile(app.Input)
+		buf, err = ioutil.ReadFile(app.Input)
 	}
 	if err != nil {
 		return err
 	}
+	in := string(buf)
 
 	ctx := context.Background()
 
@@ -69,18 +70,30 @@ func (app *AppTemplate) RunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	outBuf, err := app.TemplateExecute(ctx, inBuf)
+	su := app.NewStorageUploader(ctx)
+	tv := app.NewTemplateVariable(su)
+	out, err := tv.Execute(in)
 	if err != nil {
 		return err
 	}
 
 	if app.Output == "-" {
-		_, err = os.Stdout.Write(outBuf)
+		_, err = os.Stdout.WriteString(out)
 	} else {
-		err = ioutil.WriteFile(app.Output, outBuf, 0644)
+		app.Logf("Wrinting to %s", app.Output)
+		err = ioutil.WriteFile(app.Output, []byte(out), 0644)
 	}
 	if err != nil {
 		return err
+	}
+
+	app.Prompt("Files to upload: %d", su.Files())
+
+	if su.Valid() && su.Files() > 0 {
+		err = su.Execute(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

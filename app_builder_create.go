@@ -105,56 +105,41 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 		})
 	}
 	template.Distribute = &distributes
-	var files []string
-	for _, customize := range *template.Customize {
-		if c, ok := customize.AsImageTemplateShellCustomizer(); ok {
-			if c.ScriptURI != nil {
-				files = append(files, *c.ScriptURI)
-			}
-		} else if c, ok := customize.AsImageTemplatePowerShellCustomizer(); ok {
-			if c.ScriptURI != nil {
-				files = append(files, *c.ScriptURI)
-			}
-		} else if c, ok := customize.AsImageTemplateFileCustomizer(); ok {
-			if c.SourceURI != nil {
-				files = append(files, *c.SourceURI)
-			}
-		}
-	}
-	for _, file := range files {
-		_, err := app.StorageUpload(ctx, file)
-		if err != nil {
-			return err
-		}
-	}
-	storageMap := app.StorageMap()
+	su := app.NewStorageUploader(ctx)
 	var customizes []virtualmachineimagebuilder.BasicImageTemplateCustomizer
 	for _, customize := range *template.Customize {
 		if c, ok := customize.AsImageTemplateShellCustomizer(); ok {
 			if c.ScriptURI != nil {
-				f := storageMap[*c.ScriptURI]
-				c.ScriptURI = &f
+				u, err := su.Add(*c.ScriptURI)
+				if err != nil {
+					return err
+				}
+				c.ScriptURI = &u
 			}
 			customizes = append(customizes, c)
 		} else if c, ok := customize.AsImageTemplatePowerShellCustomizer(); ok {
 			if c.ScriptURI != nil {
-				f := storageMap[*c.ScriptURI]
-				c.ScriptURI = &f
+				u, err := su.Add(*c.ScriptURI)
+				if err != nil {
+					return err
+				}
+				c.ScriptURI = &u
 			}
 			customizes = append(customizes, c)
 		} else if c, ok := customize.AsImageTemplateFileCustomizer(); ok {
 			if c.SourceURI != nil {
-				f := storageMap[*c.SourceURI]
-				c.SourceURI = &f
+				u, err := su.Add(*c.SourceURI)
+				if err != nil {
+					return err
+				}
+				c.SourceURI = &u
 			}
 			customizes = append(customizes, c)
-		} else {
-			customizes = append(customizes, customize)
 		}
 	}
 	template.Customize = &customizes
-
 	app.Dump(template)
+	su.Execute(ctx)
 
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer

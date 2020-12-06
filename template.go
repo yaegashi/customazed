@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"text/template"
@@ -17,21 +16,17 @@ type TemplateVariable struct {
 	funcMap template.FuncMap
 }
 
-func (app *App) TemplateExecute(ctx context.Context, in []byte) ([]byte, error) {
-	if app._TemplateCache == nil {
-		app._TemplateCache = map[string]string{}
-	}
-	if app._TemplateRef == nil {
-		app._TemplateRef = map[string]bool{}
+func (app *App) NewTemplateVariable(su StorageUploader) *TemplateVariable {
+	if su == nil {
+		su = DisabledStorageUploader("upload: no configuration")
 	}
 	tv := &TemplateVariable{
-		cache: app._TemplateCache,
-		ref:   app._TemplateRef,
+		cache: map[string]string{},
+		ref:   map[string]bool{},
 	}
 	tv.funcMap = template.FuncMap{
 		"upload": tv.NewFunc("upload", func(key string) (string, error) {
-			app.Logf("Uploading %s", key)
-			return app.StorageUpload(ctx, key)
+			return su.Add(key)
 		}),
 		"cfg": tv.NewFunc("cfg", func(key string) (string, error) {
 			return reflectutil.Get(app.ConfigLoad, key)
@@ -46,28 +41,7 @@ func (app *App) TemplateExecute(ctx context.Context, in []byte) ([]byte, error) 
 			return "", fmt.Errorf("Environment variable %q not found", key)
 		}),
 	}
-	out, err := tv.Execute(string(in))
-	if err != nil {
-		return nil, err
-	}
-	return []byte(out), nil
-}
-
-func (tv *TemplateVariable) Execute(in string) (string, error) {
-	tmpl, err := template.New("template").Funcs(tv.funcMap).Parse(in)
-	if err != nil {
-		return "", err
-	}
-	buf := &bytes.Buffer{}
-	err = tmpl.Execute(buf, tv)
-	if err != nil {
-		return "", err
-	}
-	if tv.err != nil {
-		return "", tv.err
-	}
-	out := buf.String()
-	return out, nil
+	return tv
 }
 
 func (tv *TemplateVariable) NewFunc(fName string, fCall func(string) (string, error)) func(string) string {
@@ -105,22 +79,35 @@ func (tv *TemplateVariable) NewFunc(fName string, fCall func(string) (string, er
 	}
 }
 
-func (app *App) TemplateResolve(ctx context.Context, val interface{}) (interface{}, error) {
+func (tv *TemplateVariable) Execute(in string) (string, error) {
+	tmpl, err := template.New("template").Funcs(tv.funcMap).Parse(in)
+	if err != nil {
+		return "", err
+	}
+	buf := &bytes.Buffer{}
+	err = tmpl.Execute(buf, tv)
+	if err != nil {
+		return "", err
+	}
+	if tv.err != nil {
+		return "", tv.err
+	}
+	out := buf.String()
+	return out, nil
+}
+
+func (tv *TemplateVariable) Resolve(v interface{}) error {
 	var tmpErr error
-	v := reflectutil.Clone(val)
 	reflectutil.WalkSet(v, func(v interface{}) interface{} {
 		if s, ok := v.(string); ok {
-			b, err := app.TemplateExecute(ctx, []byte(s))
+			t, err := tv.Execute(s)
 			if tmpErr == nil && err != nil {
 				tmpErr = err
 				return ""
 			}
-			return string(b)
+			return t
 		}
 		return v
 	})
-	if tmpErr != nil {
-		return nil, tmpErr
-	}
-	return v, nil
+	return tmpErr
 }

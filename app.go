@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/yaegashi/customazed/store"
+	"github.com/yaegashi/customazed/utils/reflectutil"
 	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
@@ -66,15 +66,12 @@ type App struct {
 	_StorageToken     *adal.ServicePrincipalToken
 	_StorageAccount   *storage.Account
 	_StorageContainer *storage.BlobContainer
-	_StorageMap       map[string]string
 	_Identity         *msi.Identity
 	_Machine          *compute.VirtualMachine
 	_Builder          *virtualmachineimagebuilder.ImageTemplate
 	_Image            *compute.Image
 	_Gallery          *compute.Gallery
 	_GalleryImage     *compute.GalleryImage
-	_TemplateRef      map[string]bool
-	_TemplateCache    map[string]string
 	_HashNS           uuid.UUID
 }
 
@@ -132,7 +129,9 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	app.ConfigLoad.SubscriptionID = ssutil.FirstNonEmpty(app.SubscriptionID, os.Getenv(auth.SubscriptionID), app.ConfigLoad.SubscriptionID, defaultSubscriptionID)
 	app.ConfigLoad.HashNS = ssutil.FirstNonEmpty(app.HashNS, os.Getenv(environHashNS), app.ConfigLoad.HashNS, uuid.New().String())
 
-	cfg, err := app.TemplateResolve(context.Background(), app.ConfigLoad)
+	tv := app.NewTemplateVariable(DisabledStorageUploader(fmt.Sprintf("upload: forbidden in %s", app.ConfigFile)))
+	cfg := reflectutil.Clone(app.ConfigLoad)
+	err = tv.Resolve(cfg)
 	if err != nil {
 		return err
 	}
@@ -325,5 +324,15 @@ func (app *App) Dump(v interface{}) {
 		if err == nil {
 			log.Printf("\n%s", string(b))
 		}
+	}
+}
+
+func (app *App) Prompt(args ...interface{}) {
+	if !app.Quiet {
+		if len(args) > 0 {
+			log.Printf(args[0].(string), args[1:]...)
+		}
+		fmt.Fprint(os.Stdout, "Press ENTER to proceed: ")
+		fmt.Scanln()
 	}
 }

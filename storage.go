@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/url"
 	"os"
 
@@ -128,52 +129,105 @@ func (app *App) StorageSetup(ctx context.Context) error {
 	return app.StorageGet(ctx)
 }
 
-func (app *App) StorageUpload(ctx context.Context, path string) (string, error) {
+type StorageUploader interface {
+	Valid() bool
+	Files() int
+	Add(s string) (string, error)
+	Execute(ctx context.Context) error
+}
+
+type DisabledStorageUploader string
+
+func (d DisabledStorageUploader) Valid() bool                       { return false }
+func (d DisabledStorageUploader) Files() int                        { return 0 }
+func (d DisabledStorageUploader) Add(s string) (string, error)      { return "", errors.New(string(d)) }
+func (d DisabledStorageUploader) Execute(ctx context.Context) error { return errors.New(string(d)) }
+
+type BlobStorageUploader struct {
+	app          *App
+	prefix       string
+	uploadMap    map[string]string
+	containerURL azblob.ContainerURL
+	valid        bool
+}
+
+func (app *App) NewStorageUploader(ctx context.Context) StorageUploader {
 	if !app.StorageValid() {
-		return "", nil
+		return DisabledStorageUploader("upload: no storage configuration")
+	}
+	endpoint := "https://" + app.Config.Storage.AccountName
+	valid := !app.NoLogin
+	if valid {
+		account, err := app.StorageAccount(ctx)
+		if err == nil {
+			endpoint = *account.PrimaryEndpoints.Blob
+		} else {
+			valid = false
+		}
+	}
+	endpointURL, _ := url.Parse(endpoint)
+	serviceURL := azblob.NewServiceURL(*endpointURL, nil)
+	containerURL := serviceURL.NewContainerURL(app.Config.Storage.ContainerName)
+	return &BlobStorageUploader{
+		app:          app,
+		prefix:       app.HashID("upload"),
+		uploadMap:    map[string]string{},
+		containerURL: containerURL,
+		valid:        valid,
+	}
+}
+
+func (su *BlobStorageUploader) path(path string) string { return su.prefix + "/" + path }
+func (su *BlobStorageUploader) Valid() bool             { return su.valid }
+func (su *BlobStorageUploader) Files() int              { return len(su.uploadMap) }
+
+func (su *BlobStorageUploader) Add(path string) (string, error) {
+	stringBlobURL, ok := su.uploadMap[path]
+	if !ok {
+		su.app.Logf("Blob: adding %s", path)
+		stringBlobURL = su.containerURL.NewBlockBlobURL(su.path(path)).String()
+		su.uploadMap[path] = stringBlobURL
+	}
+	return stringBlobURL, nil
+}
+
+func (su *BlobStorageUploader) Execute(ctx context.Context) error {
+	if !su.valid {
+		return nil
 	}
 
-	uploadMap := app.StorageMap()
-	if _, ok := uploadMap[path]; ok {
-		return "", nil
-	}
+	app := su.app
 
 	token, err := app.StorageToken()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	account, err := app.StorageAccount(ctx)
 	if err != nil {
-		return "", err
+		return err
 	}
-
-	app.Logf("Uploading %s...", path)
-
-	r, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer r.Close()
 
 	p := azblob.NewPipeline(azblob.NewTokenCredential(token.OAuthToken(), nil), azblob.PipelineOptions{})
-	u, _ := url.Parse(*account.PrimaryEndpoints.Blob)
-	storageURL := azblob.NewServiceURL(*u, p)
-	containerURL := storageURL.NewContainerURL(app.Config.Storage.ContainerName)
-	blobURL := containerURL.NewBlockBlobURL(path)
-	_, err = azblob.UploadFileToBlockBlob(ctx, r, blobURL, azblob.UploadToBlockBlobOptions{})
-	if err != nil {
-		return "", err
+	endpointURL, _ := url.Parse(*account.PrimaryEndpoints.Blob)
+	serviceURL := azblob.NewServiceURL(*endpointURL, p)
+	containerURL := serviceURL.NewContainerURL(app.Config.Storage.ContainerName)
+	stringPrefixURL := containerURL.NewBlockBlobURL(su.prefix).String()
+	app.Logf("Blob: destination %s", stringPrefixURL)
+
+	for path := range su.uploadMap {
+		app.Logf("Blob: uploading %s", path)
+		r, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		blobURL := containerURL.NewBlockBlobURL(su.path(path))
+		_, err = azblob.UploadFileToBlockBlob(ctx, r, blobURL, azblob.UploadToBlockBlobOptions{})
+		r.Close()
+		if err != nil {
+			return err
+		}
 	}
 
-	uploadMap[path] = blobURL.String()
-
-	return blobURL.String(), nil
-}
-
-func (app *App) StorageMap() map[string]string {
-	if app._StorageMap == nil {
-		app._StorageMap = make(map[string]string)
-	}
-	return app._StorageMap
+	return nil
 }
