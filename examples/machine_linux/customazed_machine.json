@@ -1,0 +1,6 @@
+{
+  "fileUris": [
+    "{{upload `scripts/hello.sh`}}"
+  ],
+  "commandToExecute": "bash hello.sh"
+}

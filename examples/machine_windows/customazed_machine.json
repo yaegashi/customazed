@@ -1,0 +1,6 @@
+{
+  "fileUris": [
+    "{{upload `scripts/hello.ps1`}}"
+  ],
+  "commandToExecute": "powershell -ExecutionPolicy Bypass -Command {{prefix}}/scripts/hello.ps1"
+}

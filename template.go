@@ -40,6 +40,8 @@ func (app *App) NewTemplateVariable(su StorageUploader) *TemplateVariable {
 			}
 			return "", fmt.Errorf("Environment variable %q not found", key)
 		}),
+		"hash":   func(s string) string { return app.HashID(s) },
+		"prefix": func() string { return app.HashID("upload") },
 	}
 	return tv
 }

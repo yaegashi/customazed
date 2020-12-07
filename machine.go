@@ -9,14 +9,25 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-func NewWindowsCustomScriptExtension(location string, tag string) *compute.VirtualMachineExtension {
+func NewWindowsCustomScriptExtension(location string) *compute.VirtualMachineExtension {
 	return &compute.VirtualMachineExtension{
 		Location: &location,
 		VirtualMachineExtensionProperties: &compute.VirtualMachineExtensionProperties{
-			ForceUpdateTag:          &tag,
 			Publisher:               to.StringPtr("Microsoft.Compute"),
 			Type:                    to.StringPtr("CustomScriptExtension"),
 			TypeHandlerVersion:      to.StringPtr("1.10"),
+			AutoUpgradeMinorVersion: to.BoolPtr(true),
+		},
+	}
+}
+
+func NewLinuxCustomScriptExtension(location string) *compute.VirtualMachineExtension {
+	return &compute.VirtualMachineExtension{
+		Location: &location,
+		VirtualMachineExtensionProperties: &compute.VirtualMachineExtensionProperties{
+			Publisher:               to.StringPtr("Microsoft.Azure.Extensions"),
+			Type:                    to.StringPtr("CustomScript"),
+			TypeHandlerVersion:      to.StringPtr("2.1"),
 			AutoUpgradeMinorVersion: to.BoolPtr(true),
 		},
 	}
@@ -34,7 +45,7 @@ func (app *App) Machine(ctx context.Context) (*compute.VirtualMachine, error) {
 
 func (app *App) MachineValid() bool {
 	cfg := app.Config.Machine
-	if ssutil.HasEmpty(cfg.Location, cfg.ResourceGroup, cfg.MachineName) {
+	if ssutil.HasEmpty(cfg.ResourceGroup, cfg.MachineName) {
 		app.Log("Machine: missing configuration")
 		return false
 	}

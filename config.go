@@ -20,13 +20,9 @@ type IdentityConfig struct {
 
 // MachineConfig is configuration for virtual machine
 type MachineConfig struct {
-	Location       string   `json:"location,omitempty"`
-	ResourceGroup  string   `json:"resourceGroup,omitempty"`
-	MachineName    string   `json:"machineName,omitempty"`
-	MachineID      string   `json:"machineId,omitempty"`
-	Files          []string `json:"files,omitempty"`
-	Command        string   `json:"command,omitempty"`
-	ForceUpdateTag string   `json:"forceUpdateTag,omitempty"`
+	ResourceGroup string `json:"resourceGroup,omitempty"`
+	MachineName   string `json:"machineName,omitempty"`
+	MachineID     string `json:"machineId,omitempty"`
 }
 
 // ImageConfig is configuration for managed image
