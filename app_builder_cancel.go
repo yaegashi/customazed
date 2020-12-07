@@ -20,7 +20,7 @@ func (app *AppBuilder) AppBuilderCancelCmder() cmder.Cmder {
 func (app *AppBuilderCancel) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "cancel",
-		Short:        "Cancel image builder",
+		Short:        "Cancel image build",
 		RunE:         app.RunE,
 		SilenceUsage: true,
 	}
@@ -34,6 +34,7 @@ func (app *AppBuilderCancel) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.Log("Canceling image build...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
 	templateFuture, err := templatesClient.Cancel(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)

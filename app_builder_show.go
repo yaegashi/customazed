@@ -33,6 +33,7 @@ func (app *AppBuilderShow) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.Log("Getting image template...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
 	template, err := templatesClient.Get(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)

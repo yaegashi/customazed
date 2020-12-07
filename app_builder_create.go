@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/virtualmachineimagebuilder/mgmt/virtualmachineimagebuilder"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -27,7 +28,7 @@ func (app *AppBuilderCreate) Cmd() *cobra.Command {
 		RunE:         app.RunE,
 		SilenceUsage: true,
 	}
-	cmd.Flags().StringVarP(&app.Input, "input", "i", "-", "input file path")
+	cmd.Flags().StringVarP(&app.Input, "input", "i", "customazed_builder.json", "input file path")
 	return cmd
 }
 
@@ -53,7 +54,12 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	b, err := ioutil.ReadFile(app.Input)
+	var b []byte
+	if app.Input == "-" {
+		b, err = ioutil.ReadAll(os.Stdin)
+	} else {
+		b, err = ioutil.ReadFile(app.Input)
+	}
 	if err != nil {
 		return err
 	}
@@ -65,19 +71,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	}
 
 	template.Location = &app.Config.Builder.Location
-	{
-		// Workaround for validation failure
-		// Similar issue: https://github.com/Azure/azure-sdk-for-go/issues/2445
-		if s, ok := template.Source.AsImageTemplateManagedImageSource(); ok {
-			template.Source = s
-		}
-		if s, ok := template.Source.AsImageTemplatePlatformImageSource(); ok {
-			template.Source = s
-		}
-		if s, ok := template.Source.AsImageTemplateSharedImageVersionSource(); ok {
-			template.Source = s
-		}
-	}
+
 	if identity != nil {
 		template.Identity = &virtualmachineimagebuilder.ImageTemplateIdentity{
 			Type: virtualmachineimagebuilder.UserAssigned,
@@ -86,6 +80,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 			},
 		}
 	}
+
 	var distributes []virtualmachineimagebuilder.BasicImageTemplateDistributor
 	if image != nil {
 		distributes = append(distributes, virtualmachineimagebuilder.ImageTemplateManagedImageDistributor{
@@ -105,42 +100,43 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 		})
 	}
 	template.Distribute = &distributes
-	su := app.NewStorageUploader(ctx)
+
+	// Workaround for validation failure
+	// Similar issue: https://github.com/Azure/azure-sdk-for-go/issues/2445
+	if s, ok := template.Source.AsImageTemplateManagedImageSource(); ok {
+		template.Source = s
+	} else if s, ok := template.Source.AsImageTemplatePlatformImageSource(); ok {
+		template.Source = s
+	} else if s, ok := template.Source.AsImageTemplateSharedImageVersionSource(); ok {
+		template.Source = s
+	}
+
+	// Workaround for validation failure
 	var customizes []virtualmachineimagebuilder.BasicImageTemplateCustomizer
 	for _, customize := range *template.Customize {
 		if c, ok := customize.AsImageTemplateShellCustomizer(); ok {
-			if c.ScriptURI != nil {
-				u, err := su.Add(*c.ScriptURI)
-				if err != nil {
-					return err
-				}
-				c.ScriptURI = &u
-			}
 			customizes = append(customizes, c)
 		} else if c, ok := customize.AsImageTemplatePowerShellCustomizer(); ok {
-			if c.ScriptURI != nil {
-				u, err := su.Add(*c.ScriptURI)
-				if err != nil {
-					return err
-				}
-				c.ScriptURI = &u
-			}
 			customizes = append(customizes, c)
 		} else if c, ok := customize.AsImageTemplateFileCustomizer(); ok {
-			if c.SourceURI != nil {
-				u, err := su.Add(*c.SourceURI)
-				if err != nil {
-					return err
-				}
-				c.SourceURI = &u
-			}
 			customizes = append(customizes, c)
 		}
 	}
 	template.Customize = &customizes
+
+	su := app.NewStorageUploader(ctx)
+	tv := app.NewTemplateVariable(su)
+	err = tv.Resolve(&template)
+	if err != nil {
+		return err
+	}
+
 	app.Dump(template)
+	app.Prompt("Files to upload: %d", su.Files())
+
 	su.Execute(ctx)
 
+	app.Log("Creating image template...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
 	templateFuture, err := templatesClient.CreateOrUpdate(ctx, template, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)

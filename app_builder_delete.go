@@ -33,6 +33,7 @@ func (app *AppBuilderDelete) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.Log("Deleting image template...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
 	templateFuture, err := templatesClient.Delete(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)

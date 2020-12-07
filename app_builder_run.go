@@ -20,7 +20,7 @@ func (app *AppBuilder) AppBuilderRunCmder() cmder.Cmder {
 func (app *AppBuilderRun) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "run",
-		Short:        "Run image builder",
+		Short:        "Run image build",
 		RunE:         app.RunE,
 		SilenceUsage: true,
 	}
@@ -34,6 +34,7 @@ func (app *AppBuilderRun) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.Log("Running image build...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
 	templateFuture, err := templatesClient.Run(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)
