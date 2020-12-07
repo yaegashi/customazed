@@ -134,7 +134,12 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	app.Dump(template)
 	app.Prompt("Files to upload: %d", su.Files())
 
-	su.Execute(ctx)
+	if su.Valid() && su.Files() > 0 {
+		err = su.Execute(ctx)
+		if err != nil {
+			return err
+		}
+	}
 
 	app.Log("Creating image template...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
