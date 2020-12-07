@@ -1,42 +1,52 @@
 {
-  "TenantID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-  "SubscriptionID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-  "Storage": {
-    "Location": "westus2",
-    "ResourceGroup": "BuilderRG",
-    "AccountName": "builder12345",
-    "ContainerName": "container"
+  "variables": {
+    "customazedLoc": "westus2",
+    "customazedRG": "CustomazedRG",
+    "imageLoc": "japaneast",
+    "imageRG": "ImageRG",
+    "galleryLoc": "japaneast",
+    "galleryRG": "GalleryRG",
+    "publisher": "myCo",
+    "offer": "Windows",
+    "sku": "Win2019",
+    "imageName": "{{var `publisher`}}_{{var `offer`}}_{{var `sku`}}"
   },
-  "Identity": {
-    "Location": "westus2",
-    "ResourceGroup": "BuilderRG",
-    "IdentityName": "identity"
+  "tenantId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "subscriptionId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "hashNs": "{{cfg `tenantId`}}_{{var `imageName`}}",
+  "storage": {
+    "location": "{{var `customazedLoc`}}",
+    "resourceGroup": "{{var `customazedRG`}}",
+    "accountName": "customazed12345",
+    "containerName": "customazed"
   },
-  "Builder": {
-    "Location": "westus2",
-    "ResourceGroup": "BuilderRG",
-    "BuilderName": "builder"
+  "identity": {
+    "location": "{{var `customazedLoc`}}",
+    "resourceGroup": "{{var `customazedRG`}}",
+    "identityName": "CustomazedIdentity"
   },
-  "Image": {
-    "Location": "japaneast",
-    "ResourceGroup": "ImageRG",
-    "ImageName": "image"
+  "builder": {
+    "location": "{{var `customazedLoc`}}",
+    "resourceGroup": "{{var `customazedRG`}}",
+    "builderName": "{{var `imageName`}}"
   },
-  "Gallery": {
-    "Location": "japaneast",
-    "ResourceGroup": "ImageRG",
-    "GalleryName": "gallery",
-    "GalleryImageName": "image",
-    "Publisher": "myCo",
-    "Offer": "Windows",
-    "SKU": "Win2019",
-    "OSState": "generalized",
-    "OSType": "windows",
-    "ReplicationRegions": [
-      "japanwest",
-      "southeastasia"
-    ],
-    "ExcludeFromLatest": false,
-    "StorageAccountType": "Standard_LRS"
+  "image": {
+    "location": "{{var `imageLoc`}}",
+    "resourceGroup": "{{var `imageRG`}}",
+    "imageName": "{{var `imageName`}}"
+  },
+  "gallery": {
+    "location": "{{var `galleryLoc`}}",
+    "resourceGroup": "{{var `galleryRG`}}",
+    "galleryName": "{{var `publisher`}}",
+    "galleryImageName": "{{var `imageName`}}",
+    "publisher": "{{var `publisher`}}",
+    "offer": "{{var `offer`}}",
+    "sku": "{{var `sku`}}",
+    "osState": "generalized",
+    "osType": "windows",
+    "replicationRegions": [],
+    "excludeFromLatest": false,
+    "storageAccountType": "Standard_LRS"
   }
 }

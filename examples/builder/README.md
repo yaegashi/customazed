@@ -2,6 +2,6 @@
 
 ```console
 $ customazed setup
-$ customazed builder create -i builder.json
+$ customazed builder create
 $ customazed builder run
 ```

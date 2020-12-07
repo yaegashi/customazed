@@ -1,19 +1,19 @@
 {
-  "TenantID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-  "SubscriptionID": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-  "Storage": {
-    "Location": "japaneast",
-    "ResourceGroup": "StorageRG",
-    "AccountName": "machine12345",
-    "ContainerName": "container"
+  "tenantId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "subscriptionId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "storage": {
+    "location": "japaneast",
+    "resourceGroup": "StorageRG",
+    "accountName": "customazed12345",
+    "containerName": "customazed"
   },
-  "Machine": {
-    "Location": "japaneast",
-    "ResourceGroup": "MachineRG",
-    "MachineName": "machine",
-    "Files": [
-      "install-choco.ps1"
+  "machine": {
+    "location": "japaneast",
+    "resourceGroup": "MachineRG",
+    "machineName": "machine",
+    "files": [
+      "{{upload `install-choco.ps1`}}"
     ],
-    "Command": "powershell ./install-choco.ps1"
+    "command": "powershell ./install-choco.ps1"
   }
 }
