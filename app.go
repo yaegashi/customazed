@@ -26,7 +26,7 @@ import (
 
 const (
 	defaultTenantID       = "common"
-	defaultClientID       = "a3c13aac-2eb7-4d8a-b7ae-c29b516d566b"
+	defaultClientID       = "04b07795-8ddb-461a-bbee-02f9e1bf7b46" // identical to Azure CLI's
 	defaultSubscriptionID = ""
 	environConfigFile     = "CUSTOMAZED_CONFIG_FILE"
 	defaultConfigFile     = "customazed.json"
@@ -46,6 +46,7 @@ var (
 	initialHashNS = uuid.Must(uuid.Parse("0ca24621-d049-4455-84cf-4c3f7c3875df"))
 )
 
+// App is app
 type App struct {
 	Config         *Config
 	ConfigLoad     *Config
@@ -75,6 +76,7 @@ type App struct {
 	_HashNS           uuid.UUID
 }
 
+// Cmd returns Command for app
 func (app *App) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "customazed",
@@ -101,6 +103,7 @@ func envHelp(msg, env, def string) string {
 	return fmt.Sprintf(`%s (env:%s, default:%s)`, msg, env, def)
 }
 
+// PersistentPreRunE processes common flags for app
 func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	app.ConfigFile = ssutil.FirstNonEmpty(app.ConfigFile, os.Getenv(environConfigFile), defaultConfigFile)
 	app.ConfigDir = ssutil.FirstNonEmpty(app.ConfigDir, os.Getenv(environConfigDir), defaultConfigDir)
@@ -142,10 +145,12 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+// HashID returns UUIDv5 by hashing a string
 func (app *App) HashID(s string) string {
 	return uuid.NewSHA1(app._HashNS, []byte(s)).String()
 }
 
+// ARMAuthorizer returns Authorizer for ARM resources
 func (app *App) ARMAuthorizer() (autorest.Authorizer, error) {
 	token, err := app.ARMToken()
 	if err != nil {
@@ -154,6 +159,7 @@ func (app *App) ARMAuthorizer() (autorest.Authorizer, error) {
 	return autorest.NewBearerAuthorizer(token), nil
 }
 
+// ARMToken returns cached ServicePrincipalToken for ARM resources
 func (app *App) ARMToken() (*adal.ServicePrincipalToken, error) {
 	if app._ARMToken == nil {
 		token, err := app.GetToken()
@@ -165,6 +171,7 @@ func (app *App) ARMToken() (*adal.ServicePrincipalToken, error) {
 	return app._ARMToken, nil
 }
 
+// StorageToken returns cached ServicePrincipalToken for storage resources
 func (app *App) StorageToken() (*adal.ServicePrincipalToken, error) {
 	if app._StorageToken == nil {
 		token, err := app.GetTokenWithResource(azure.PublicCloud.ResourceIdentifiers.Storage)
@@ -176,10 +183,12 @@ func (app *App) StorageToken() (*adal.ServicePrincipalToken, error) {
 	return app._StorageToken, nil
 }
 
+// GetToken returns ServicePrincipalToken for ARM resources
 func (app *App) GetToken() (*adal.ServicePrincipalToken, error) {
 	return app.GetTokenWithResource(azure.PublicCloud.ResourceManagerEndpoint)
 }
 
+// GetTokenWithResource returns ServicePrincipalToken for specified resources
 func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalToken, error) {
 	token, err := app.Authorize()
 	if err != nil {
@@ -194,6 +203,7 @@ func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalTok
 	return token, nil
 }
 
+// Authorize returns ServicePrincipalToken
 func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 	if app.NoLogin {
 		return nil, fmt.Errorf("Login disabled")
@@ -279,6 +289,7 @@ func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 	return nil, fmt.Errorf("Unknown auth: %s", app.Auth)
 }
 
+// AuthorizeDeviceFlow runs the device auth flow unconditionally
 func (app *App) AuthorizeDeviceFlow() (*adal.ServicePrincipalToken, error) {
 	if app.NoLogin {
 		return nil, fmt.Errorf("Login disabled")
@@ -300,24 +311,28 @@ func (app *App) AuthorizeDeviceFlow() (*adal.ServicePrincipalToken, error) {
 	return token, nil
 }
 
+// Log is logging function with log.Print
 func (app *App) Log(args ...interface{}) {
 	if !app.Quiet {
 		log.Print(args...)
 	}
 }
 
+// Logln is logging function with log.Println
 func (app *App) Logln(args ...interface{}) {
 	if !app.Quiet {
 		log.Println(args...)
 	}
 }
 
+// Logf is logging function with log.Printf
 func (app *App) Logf(format string, args ...interface{}) {
 	if !app.Quiet {
 		log.Printf(format, args...)
 	}
 }
 
+// Dump is generic data dumper
 func (app *App) Dump(v interface{}) {
 	if !app.Quiet {
 		b, err := json.MarshalIndent(v, "", "  ")
@@ -327,6 +342,7 @@ func (app *App) Dump(v interface{}) {
 	}
 }
 
+// Prompt waits for user to press ENTER
 func (app *App) Prompt(args ...interface{}) {
 	if !app.Quiet {
 		if len(args) > 0 {
