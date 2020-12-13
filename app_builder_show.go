@@ -8,14 +8,17 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppBuilderShow is app builder show command
 type AppBuilderShow struct {
 	*AppBuilder
 }
 
+// AppBuilderShowCmder returns Cmder for app builder show
 func (app *AppBuilder) AppBuilderShowCmder() cmder.Cmder {
 	return &AppBuilderShow{AppBuilder: app}
 }
 
+// Cmd returns Command for app builder show
 func (app *AppBuilderShow) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "show",
@@ -26,6 +29,7 @@ func (app *AppBuilderShow) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app builder show
 func (app *AppBuilderShow) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	authorizer, err := app.ARMAuthorizer()
@@ -33,6 +37,7 @@ func (app *AppBuilderShow) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.LogBuilderName()
 	app.Log("Getting image template...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer

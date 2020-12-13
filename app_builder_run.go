@@ -8,15 +8,18 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppBuilderRun is app builder run command
 type AppBuilderRun struct {
 	*AppBuilder
 	Input string
 }
 
+// AppBuilderRunCmder returns Cmder for app builder run
 func (app *AppBuilder) AppBuilderRunCmder() cmder.Cmder {
 	return &AppBuilderRun{AppBuilder: app}
 }
 
+// Cmd returns Command for app builder run
 func (app *AppBuilderRun) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "run",
@@ -27,6 +30,7 @@ func (app *AppBuilderRun) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app builder run
 func (app *AppBuilderRun) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	authorizer, err := app.ARMAuthorizer()
@@ -34,6 +38,7 @@ func (app *AppBuilderRun) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.LogBuilderName()
 	app.Log("Running image build...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer

@@ -8,15 +8,17 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppBuilderCancel is app builder cancel command
 type AppBuilderCancel struct {
 	*AppBuilder
-	Input string
 }
 
+// AppBuilderCancelCmder returns Cmder for app builder cancel
 func (app *AppBuilder) AppBuilderCancelCmder() cmder.Cmder {
 	return &AppBuilderCancel{AppBuilder: app}
 }
 
+// Cmd returns Cmd for app builder cancel
 func (app *AppBuilderCancel) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "cancel",
@@ -27,6 +29,7 @@ func (app *AppBuilderCancel) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app builder cancel
 func (app *AppBuilderCancel) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	authorizer, err := app.ARMAuthorizer()
@@ -34,6 +37,7 @@ func (app *AppBuilderCancel) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	app.LogBuilderName()
 	app.Log("Canceling image build...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer

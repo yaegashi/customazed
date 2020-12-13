@@ -12,15 +12,18 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppBuilderCreate is app builder create command
 type AppBuilderCreate struct {
 	*AppBuilder
 	Input string
 }
 
+// AppBuilderCreateCmder returns Cmder for app builder create
 func (app *AppBuilder) AppBuilderCreateCmder() cmder.Cmder {
 	return &AppBuilderCreate{AppBuilder: app}
 }
 
+// Cmd returns Command for app builder create
 func (app *AppBuilderCreate) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "create",
@@ -32,6 +35,7 @@ func (app *AppBuilderCreate) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app builder create
 func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	authorizer, err := app.ARMAuthorizer()
@@ -120,6 +124,8 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 			customizes = append(customizes, c)
 		} else if c, ok := customize.AsImageTemplateFileCustomizer(); ok {
 			customizes = append(customizes, c)
+		} else {
+			customizes = append(customizes, customize)
 		}
 	}
 	template.Customize = &customizes
@@ -132,6 +138,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	}
 
 	app.Dump(template)
+	app.LogBuilderName()
 	app.Prompt("Files to upload: %d", su.Files())
 
 	if su.Valid() && su.Files() > 0 {
