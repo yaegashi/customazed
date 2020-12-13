@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 	"os"
+	"path"
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
@@ -145,7 +146,6 @@ func (d DisabledStorageUploader) Execute(ctx context.Context) error { return err
 
 type BlobStorageUploader struct {
 	app          *App
-	prefix       string
 	uploadMap    map[string]string
 	containerURL azblob.ContainerURL
 	valid        bool
@@ -170,23 +170,24 @@ func (app *App) NewStorageUploader(ctx context.Context) StorageUploader {
 	containerURL := serviceURL.NewContainerURL(app.Config.Storage.ContainerName)
 	return &BlobStorageUploader{
 		app:          app,
-		prefix:       app.HashID("upload"),
 		uploadMap:    map[string]string{},
 		containerURL: containerURL,
 		valid:        valid,
 	}
 }
 
-func (su *BlobStorageUploader) path(path string) string { return su.prefix + "/" + path }
-func (su *BlobStorageUploader) Valid() bool             { return su.valid }
-func (su *BlobStorageUploader) Files() int              { return len(su.uploadMap) }
+func (su *BlobStorageUploader) path(p string) string {
+	return path.Join(su.app.Config.Storage.Prefix, p)
+}
+func (su *BlobStorageUploader) Valid() bool { return su.valid }
+func (su *BlobStorageUploader) Files() int  { return len(su.uploadMap) }
 
-func (su *BlobStorageUploader) Add(path string) (string, error) {
-	stringBlobURL, ok := su.uploadMap[path]
+func (su *BlobStorageUploader) Add(p string) (string, error) {
+	stringBlobURL, ok := su.uploadMap[p]
 	if !ok {
-		su.app.Logf("Blob: adding %s", path)
-		stringBlobURL = su.containerURL.NewBlockBlobURL(su.path(path)).String()
-		su.uploadMap[path] = stringBlobURL
+		su.app.Logf("Blob: adding %s", p)
+		stringBlobURL = su.containerURL.NewBlockBlobURL(su.path(p)).String()
+		su.uploadMap[p] = stringBlobURL
 	}
 	return stringBlobURL, nil
 }
@@ -212,7 +213,7 @@ func (su *BlobStorageUploader) Execute(ctx context.Context) error {
 	endpointURL, _ := url.Parse(*account.PrimaryEndpoints.Blob)
 	serviceURL := azblob.NewServiceURL(*endpointURL, p)
 	containerURL := serviceURL.NewContainerURL(app.Config.Storage.ContainerName)
-	stringPrefixURL := containerURL.NewBlockBlobURL(su.prefix).String()
+	stringPrefixURL := containerURL.NewBlockBlobURL(su.app.Config.Storage.Prefix).String()
 	app.Logf("Blob: destination %s", stringPrefixURL)
 
 	for path := range su.uploadMap {

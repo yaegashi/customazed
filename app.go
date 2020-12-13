@@ -133,14 +133,20 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	app.ConfigLoad.HashNS = ssutil.FirstNonEmpty(app.HashNS, os.Getenv(environHashNS), app.ConfigLoad.HashNS, uuid.New().String())
 
 	tv := app.NewTemplateVariable(DisabledStorageUploader(fmt.Sprintf("upload: forbidden in %s", app.ConfigFile)))
+
+	hashNS, err := tv.Execute(app.ConfigLoad.HashNS)
+	if err != nil {
+		return err
+	}
+	app._HashNS = uuid.NewSHA1(initialHashNS, []byte(hashNS))
+
 	cfg := reflectutil.Clone(app.ConfigLoad)
 	err = tv.Resolve(cfg)
 	if err != nil {
 		return err
 	}
-	app.Config = cfg.(*Config)
 
-	app._HashNS = uuid.NewSHA1(initialHashNS, []byte(app.Config.HashNS))
+	app.Config = cfg.(*Config)
 
 	return nil
 }

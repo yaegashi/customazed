@@ -8,6 +8,7 @@ type StorageConfig struct {
 	AccountID     string `json:"accountId,omitempty"`
 	ContainerName string `json:"containerName,omitempty"`
 	ContainerID   string `json:"containerId,omitempty"`
+	Prefix        string `json:"prefix,omitempty"`
 }
 
 // IdentityConfig is configuration for user assigned identity
@@ -61,6 +62,7 @@ type BuilderConfig struct {
 
 // Config is configuration for application
 type Config struct {
+	ID             string            `json:"id,omitempty"`
 	TenantID       string            `json:"tenantId,omitempty"`
 	ClientID       string            `json:"clientId,omitempty"`
 	SubscriptionID string            `json:"subscriptionId,omitempty"`
