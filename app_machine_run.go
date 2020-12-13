@@ -13,15 +13,18 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppMachineRun is app machine run command
 type AppMachineRun struct {
 	*AppMachine
 	Input string
 }
 
+// AppMachineRunCmder returns Cmder for app machine run
 func (app *AppMachine) AppMachineRunCmder() cmder.Cmder {
 	return &AppMachineRun{AppMachine: app}
 }
 
+// Cmd returns Command for app machine rune
 func (app *AppMachineRun) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "run",
@@ -33,6 +36,7 @@ func (app *AppMachineRun) Cmd() *cobra.Command {
 	return cmd
 }
 
+// CustomScriptSettings is input object of app machine run
 type CustomScriptSettings struct {
 	FileUris         []string `json:"fileUris,omitempty"`
 	CommandToExecute string   `json:"commandToExecute,omitempty"`
@@ -40,6 +44,7 @@ type CustomScriptSettings struct {
 	Timestamp        int      `json:"timestamp,omitempty"`
 }
 
+// RunE is main routine for app machine run
 func (app *AppMachineRun) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	authorizer, err := app.ARMAuthorizer()

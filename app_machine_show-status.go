@@ -10,17 +10,20 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
-type AppMachineStatus struct {
+// AppMachineShowStatus is app machine show-status command
+type AppMachineShowStatus struct {
 	*AppMachine
 }
 
-func (app *AppMachine) AppMachineStatusCmder() cmder.Cmder {
-	return &AppMachineStatus{AppMachine: app}
+// AppMachineShowStatusCmder returns Cmder for app machine show-status
+func (app *AppMachine) AppMachineShowStatusCmder() cmder.Cmder {
+	return &AppMachineShowStatus{AppMachine: app}
 }
 
-func (app *AppMachineStatus) Cmd() *cobra.Command {
+// Cmd returns Cmder for app machine show-status
+func (app *AppMachineShowStatus) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "status",
+		Use:          "show-status",
 		Short:        "show last status of VM extension",
 		RunE:         app.RunE,
 		SilenceUsage: true,
@@ -28,7 +31,8 @@ func (app *AppMachineStatus) Cmd() *cobra.Command {
 	return cmd
 }
 
-func (app *AppMachineStatus) RunE(cmd *cobra.Command, args []string) error {
+// RunE is main routine for app machine show-status
+func (app *AppMachineShowStatus) RunE(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
 	authorizer, err := app.ARMAuthorizer()
