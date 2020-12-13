@@ -7,9 +7,6 @@ Invoke-Expression ((New-Object System.Net.WebClient).DownloadString("https://cho
 # Install chocolatey packages
 choco install -y --ignore-checksums googlechrome
 choco install -y vscode
-choco install -y git
+choco install -y git | Out-Null # suppress too much output
 choco install -y azure-cli
 choco install -y az.powershell
-choco install -y microsoftazurestorageexplorer
-choco install -y nodejs.install
-choco install -y rclone

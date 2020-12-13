@@ -1,0 +1,55 @@
+{
+  "variables": {
+    "tenantId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+    "subscriptionId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+    "location": "westus2",
+    "resourceGroup": "CustomazedRG",
+    "storageAccountName": "customazed12345",
+    "publisher": "CustomazedPublisher",
+    "offer": "CustomazedUbuntuServer",
+    "sku": "18.04-Customazed",
+    "osType": "linux",
+    "imageName": "{{var `publisher`}}_{{var `offer`}}_{{var `sku`}}",
+    "serial": "1"
+  },
+  "id": "{{hash (var `imageName`)}}_{{var `serial`}}",
+  "tenantId": "{{var `tenantId`}}",
+  "subscriptionId": "{{var `subscriptionId`}}",
+  "hashNS": "{{cfg `tenantId`}}_{{cfg `subscriptionId`}}",
+  "storage": {
+    "location": "{{var `location`}}",
+    "resourceGroup": "{{var `resourceGroup`}}",
+    "accountName": "{{var `storageAccountName`}}",
+    "containerName": "customazed",
+    "prefix": "{{id}}"
+  },
+  "identity": {
+    "location": "{{var `location`}}",
+    "resourceGroup": "{{var `resourceGroup`}}",
+    "identityName": "CustomazedIdentity"
+  },
+  "builder": {
+    "location": "{{var `location`}}",
+    "resourceGroup": "{{var `resourceGroup`}}",
+    "builderName": "{{id}}"
+  },
+  "image": {
+    "location": "{{var `location`}}",
+    "resourceGroup": "{{var `resourceGroup`}}",
+    "imageName": "{{var `imageName`}}_{{var `serial`}}"
+  },
+  "gallery": {
+    "location": "{{var `location`}}",
+    "resourceGroup": "{{var `resourceGroup`}}",
+    "galleryName": "{{var `publisher`}}",
+    "galleryImageName": "{{var `imageName`}}",
+    "publisher": "{{var `publisher`}}",
+    "offer": "{{var `offer`}}",
+    "sku": "{{var `sku`}}",
+    "osType": "{{var `osType`}}",
+    "osState": "generalized",
+    "replicationRegions": [],
+    "excludeFromLatest": false,
+    "storageAccountType": "Standard_LRS"
+  }
+}

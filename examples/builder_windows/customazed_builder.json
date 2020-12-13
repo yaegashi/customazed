@@ -1,0 +1,53 @@
+{
+  "properties": {
+    "buildTimeoutInMinutes": 100,
+    "vmProfile": {
+      "vmSize": "Standard_D2_v2",
+      "osDiskSizeGB": 127
+    },
+    "source": {
+      "type": "PlatformImage",
+      "publisher": "MicrosoftWindowsServer",
+      "offer": "WindowsServer",
+      "sku": "2019-Datacenter",
+      "version": "latest"
+    },
+    "customize": [
+      {
+        "type": "PowerShell",
+        "name": "Disable Windows Update",
+        "runElevated": true,
+        "scriptUri": "{{upload `scripts/disable_update.ps1`}}"
+      },
+      {
+        "type": "PowerShell",
+        "name": "Run setup script",
+        "runElevated": true,
+        "scriptUri": "{{upload `scripts/setup.ps1`}}"
+      },
+      {
+        "type": "WindowsRestart",
+        "restartTimeout": "15m"
+      },
+      {
+        "type": "PowerShell",
+        "name": "Enable Windows Update",
+        "runElevated": true,
+        "scriptUri": "{{upload `scripts/enable_update.ps1`}}"
+      },
+      {
+        "type": "WindowsUpdate",
+        "searchCriteria": "IsInstalled=0",
+        "filters": [
+          "exclude:$_.Title -like '*Preview*'",
+          "include:$true"
+        ],
+        "updateLimit": 20
+      },
+      {
+        "type": "WindowsRestart",
+        "restartTimeout": "15m"
+      }
+    ]
+  }
+}
