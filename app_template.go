@@ -9,16 +9,19 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppTemplate is app template command
 type AppTemplate struct {
 	*App
 	Input  string
 	Output string
 }
 
+// AppTemplateCmder returns Cmder for app template
 func (app *App) AppTemplateCmder() cmder.Cmder {
 	return &AppTemplate{App: app}
 }
 
+// Cmd returns Command for app template
 func (app *AppTemplate) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "template",
@@ -32,6 +35,7 @@ func (app *AppTemplate) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app template
 func (app *AppTemplate) RunE(cmd *cobra.Command, args []string) error {
 	var err error
 	var buf []byte

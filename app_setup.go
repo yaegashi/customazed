@@ -7,14 +7,17 @@ import (
 	cmder "github.com/yaegashi/cobra-cmder"
 )
 
+// AppSetup is app setup command
 type AppSetup struct {
 	*App
 }
 
+// AppSetupCmder returns Cmder for app setup
 func (app *App) AppSetupCmder() cmder.Cmder {
 	return &AppSetup{App: app}
 }
 
+// Cmd returns Command for app setup
 func (app *AppSetup) Cmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "setup",
@@ -25,6 +28,7 @@ func (app *AppSetup) Cmd() *cobra.Command {
 	return cmd
 }
 
+// RunE is main routine for app setup
 func (app *AppSetup) RunE(cmd *cobra.Command, args []string) error {
 	var err error
 	_, err = app.ARMToken()
