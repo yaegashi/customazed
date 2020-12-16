@@ -1,6 +1,7 @@
 # builder example for linux
 
 ```console
+$ customazed login
 $ customazed feature register
 $ customazed feature show
 $ customazed setup

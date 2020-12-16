@@ -3,9 +3,12 @@
 ## Usage
 
 ```console
+$ customazed login
+$ customazed feature register
+$ customazed feature show
 $ customazed setup
 $ customazed machine run
-$ customazed machine status
+$ customazed machine show-status
 ```
 
 ## Resources

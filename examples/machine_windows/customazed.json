@@ -1,21 +1,15 @@
 {
-  "variables": {
-    "customazedLoc": "westus2",
-    "customazedRG": "CustomazedRG",
-    "machineRG": "MachineRG",
-    "machineName": "windowsMachine"
-  },
   "tenantId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
   "subscriptionId": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-  "hashNs": "{{cfg `tenantId`}}_{{var `machineRG`}}_{{var `machineName`}}",
   "storage": {
-    "location": "{{var `customazedLoc`}}",
-    "resourceGroup": "{{var `customazedRG`}}",
+    "location": "westus2",
+    "resourceGroup": "CustomazedRG",
     "accountName": "customazed12345",
-    "containerName": "customazed"
+    "containerName": "customazed",
+    "prefix": "{{hash (cfg `machine.resourceGroup`) (cfg `machine.machineName`)}}"
   },
   "machine": {
-    "resourceGroup": "{{var `machineRG`}}",
-    "machineName": "{{var `machineName`}}"
+    "resourceGroup": "MachineRG",
+    "machineName": "WindowsMachine"
   }
 }
