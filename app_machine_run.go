@@ -132,7 +132,7 @@ func (app *AppMachineRun) RunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		result = "Failure"
 	}
-	app.Logf("%s: use \"%s machine status\" to see the output", result, cmd.Root().Name())
+	app.Logf("%s: use \"%s machine show-status\" to see the output", result, cmd.Root().Name())
 
 	return err
 }
