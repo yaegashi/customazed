@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/yaegashi/customazed/store"
@@ -151,9 +152,9 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// HashID returns UUIDv5 by hashing a string
-func (app *App) HashID(s string) string {
-	return uuid.NewSHA1(app._HashNS, []byte(s)).String()
+// HashID returns UUIDv5 by hashing strings
+func (app *App) HashID(s ...string) string {
+	return uuid.NewSHA1(app._HashNS, []byte(strings.Join(s, " "))).String()
 }
 
 // ARMAuthorizer returns Authorizer for ARM resources
