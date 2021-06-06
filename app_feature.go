@@ -13,6 +13,7 @@ var appFeatureProviders = []string{
 	"Microsoft.VirtualMachineImages",
 	"Microsoft.KeyVault",
 	"Microsoft.Compute",
+	"Microsoft.Network",
 	"Microsoft.Storage",
 }
 
