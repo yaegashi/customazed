@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/virtualmachineimagebuilder/mgmt/virtualmachineimagebuilder"
+	"github.com/Azure/azure-sdk-for-go/services/virtualmachineimagebuilder/mgmt/2020-02-14/virtualmachineimagebuilder"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/spf13/cobra"
 	cmder "github.com/yaegashi/cobra-cmder"
@@ -78,7 +78,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 
 	if identity != nil {
 		template.Identity = &virtualmachineimagebuilder.ImageTemplateIdentity{
-			Type: virtualmachineimagebuilder.UserAssigned,
+			Type: virtualmachineimagebuilder.ResourceIdentityTypeUserAssigned,
 			UserAssignedIdentities: map[string]*virtualmachineimagebuilder.ImageTemplateIdentityUserAssignedIdentitiesValue{
 				*identity.ID: {},
 			},

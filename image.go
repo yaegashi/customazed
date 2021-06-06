@@ -6,8 +6,8 @@ import (
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 )
 
 func (app *App) Image(ctx context.Context) (*compute.Image, error) {

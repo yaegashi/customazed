@@ -5,8 +5,8 @@ import (
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 )
 
 func (app *App) Gallery(ctx context.Context) (*compute.Gallery, error) {
@@ -50,7 +50,7 @@ func (app *App) GalleryGet(ctx context.Context) error {
 
 	galleriesClient := compute.NewGalleriesClient(app.Config.SubscriptionID)
 	galleriesClient.Authorizer = authorizer
-	gallery, err := galleriesClient.Get(ctx, app.Config.Gallery.ResourceGroup, app.Config.Gallery.GalleryName)
+	gallery, err := galleriesClient.Get(ctx, app.Config.Gallery.ResourceGroup, app.Config.Gallery.GalleryName, "")
 	if err != nil {
 		return err
 	}

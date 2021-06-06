@@ -5,8 +5,8 @@ import (
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/msi/mgmt/msi"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/msi/mgmt/2018-11-30/msi"
 )
 
 func (app *App) Identity(ctx context.Context) (*msi.Identity, error) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 

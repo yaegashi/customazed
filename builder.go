@@ -6,8 +6,8 @@ import (
 
 	"github.com/yaegashi/customazed/utils/ssutil"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/profiles/latest/virtualmachineimagebuilder/mgmt/virtualmachineimagebuilder"
+	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
+	"github.com/Azure/azure-sdk-for-go/services/virtualmachineimagebuilder/mgmt/2020-02-14/virtualmachineimagebuilder"
 )
 
 func (app *App) Builder(ctx context.Context) (*virtualmachineimagebuilder.ImageTemplate, error) {
