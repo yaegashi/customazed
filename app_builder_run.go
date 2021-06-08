@@ -11,7 +11,6 @@ import (
 // AppBuilderRun is app builder run command
 type AppBuilderRun struct {
 	*AppBuilder
-	Input string
 }
 
 // AppBuilderRunCmder returns Cmder for app builder run
@@ -46,10 +45,6 @@ func (app *AppBuilderRun) RunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	err = templateFuture.WaitForCompletionRef(ctx, templatesClient.Client)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return app.WaitForCompletion(ctx, &templateFuture, templatesClient.Client)
 }
