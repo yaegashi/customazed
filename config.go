@@ -32,6 +32,8 @@ type ImageConfig struct {
 	ResourceGroup string `json:"resourceGroup,omitempty"`
 	ImageName     string `json:"imageName,omitempty"`
 	ImageID       string `json:"imageId,omitempty"`
+	SkipSetup     bool   `json:"skipSetup,omitempty"`
+	SkipCreate    bool   `json:"skipCreate,omitempty"`
 }
 
 // GalleryConfig is configuration for shared image gallery
@@ -50,6 +52,8 @@ type GalleryConfig struct {
 	ReplicationRegions []string `json:"replicationRegions,omitempty"`
 	ExcludeFromLatest  bool     `json:"excludeFromLatest,omitempty"`
 	StorageAccountType string   `json:"storageAccountType,omitempty"`
+	SkipSetup          bool     `json:"skipSetup,omitempty"`
+	SkipCreate         bool     `json:"skipCreate,omitempty"`
 }
 
 // BuilderConfig is configuration for image template

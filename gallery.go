@@ -76,6 +76,11 @@ func (app *App) GallerySetup(ctx context.Context) error {
 		return nil
 	}
 
+	if app.Config.Gallery.SkipSetup {
+		app.Logf("Gallery: skipping setup")
+		return nil
+	}
+
 	authorizer, err := app.ARMAuthorizer()
 	if err != nil {
 		return err

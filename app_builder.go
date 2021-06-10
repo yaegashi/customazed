@@ -50,7 +50,7 @@ func (app *AppBuilder) WaitForCompletion(ctx context.Context, future azure.Futur
 		}
 		client.PollingDuration = duration
 	}
-	app.Logf("Waiting up to %s for completion...", client.PollingDuration)
+	app.Logf("Waiting for completion... (checking every %s up to %s)", client.PollingDelay, client.PollingDuration)
 	err := future.WaitForCompletionRef(ctx, client)
 	if err != nil {
 		aErr, ok := err.(autorest.DetailedError)

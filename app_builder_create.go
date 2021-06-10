@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -86,7 +87,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	}
 
 	var distributes []virtualmachineimagebuilder.BasicImageTemplateDistributor
-	if image != nil {
+	if image != nil && !app.Config.Image.SkipCreate {
 		distributes = append(distributes, virtualmachineimagebuilder.ImageTemplateManagedImageDistributor{
 			Type:          virtualmachineimagebuilder.TypeBasicImageTemplateDistributorTypeManagedImage,
 			Location:      &app.Config.Image.Location,
@@ -94,7 +95,7 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 			RunOutputName: to.StringPtr("ManagedImage"),
 		})
 	}
-	if galleryImage != nil {
+	if galleryImage != nil && !app.Config.Gallery.SkipCreate {
 		distributes = append(distributes, virtualmachineimagebuilder.ImageTemplateSharedImageDistributor{
 			GalleryImageID:     galleryImage.ID,
 			ReplicationRegions: &app.Config.Gallery.ReplicationRegions,
@@ -102,6 +103,9 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 			StorageAccountType: virtualmachineimagebuilder.SharedImageStorageAccountType(app.Config.Gallery.StorageAccountType),
 			RunOutputName:      to.StringPtr("SharedImage"),
 		})
+	}
+	if len(distributes) == 0 {
+		return fmt.Errorf("no distribution to create")
 	}
 	template.Distribute = &distributes
 

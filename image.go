@@ -45,6 +45,11 @@ func (app *App) ImageSetup(ctx context.Context) error {
 		return nil
 	}
 
+	if app.Config.Image.SkipSetup {
+		app.Logf("Image: skipping setup")
+		return nil
+	}
+
 	authorizer, err := app.ARMAuthorizer()
 	if err != nil {
 		return err
