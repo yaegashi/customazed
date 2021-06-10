@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,12 +12,8 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
-	"github.com/Azure/azure-sdk-for-go/services/preview/authorization/mgmt/2018-09-01-preview/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2021-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 	cmder "github.com/yaegashi/cobra-cmder"
 )
@@ -114,72 +109,29 @@ func (app *AppBuilderShowLogs) RunE(cmd *cobra.Command, args []string) error {
 	}
 	app.Logf("Builder storage account: %s", *account.Name)
 
-	// Find the container URL
-	storageToken, err := app.StorageToken()
+	// Get shared access keys
+	keyResult, err := accountsClient.ListKeys(ctx, *group.Name, *account.Name, "")
 	if err != nil {
 		return err
 	}
-	pipeline := azblob.NewPipeline(azblob.NewTokenCredential(storageToken.OAuthToken(), nil), azblob.PipelineOptions{})
+	accountKeys := *keyResult.Keys
+
+	// Find packerlogs container URL
+	credential, err := azblob.NewSharedKeyCredential(*account.Name, *accountKeys[0].Value)
+	if err != nil {
+		return err
+	}
+	pipeline := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 	endpointURL, _ := url.Parse(*account.PrimaryEndpoints.Blob)
 	serviceURL := azblob.NewServiceURL(*endpointURL, pipeline)
 	containerURL := serviceURL.NewContainerURL("packerlogs")
 
-	// Role assignment subroutines
-	roleID := func(name string) *string {
-		s := fmt.Sprintf("/subscriptions/%s/providers/Microsoft.Authorization/roleDefinitions/%s", app.Config.SubscriptionID, name)
-		return &s
-	}
-	assignRole := func() error {
-		containerClient := storage.NewBlobContainersClient(app.Config.SubscriptionID)
-		containerClient.Authorizer = authorizer
-		container, err := containerClient.Get(ctx, *group.Name, *account.Name, "packerlogs")
-		if err != nil {
-			return err
-		}
-		roleAssignmentsClient := authorization.NewRoleAssignmentsClient(app.Config.SubscriptionID)
-		roleAssignmentsClient.Authorizer = authorizer
-		parser, claims := &jwt.Parser{}, jwt.MapClaims{}
-		_, _, err = parser.ParseUnverified(storageToken.OAuthToken(), claims)
-		if err != nil {
-			return err
-		}
-		oid, ok := claims["oid"].(string)
-		if !ok {
-			return fmt.Errorf("user object ID not found")
-		}
-		app.Logf("Assign role to user for blob container...")
-		roleAssignmentParams := authorization.RoleAssignmentCreateParameters{
-			RoleAssignmentProperties: &authorization.RoleAssignmentProperties{
-				RoleDefinitionID: roleID(RoleNameStorageBlobDataReader),
-				PrincipalID:      &oid,
-			},
-		}
-		_, err = roleAssignmentsClient.Create(ctx, *container.ID, uuid.New().String(), roleAssignmentParams)
-		if err != nil {
-			var aErr *azure.RequestError
-			if !errors.As(err, &aErr) || aErr.ServiceError.Code != "RoleAssignmentExists" {
-				return err
-			}
-			app.Logf("Role already assigned")
-		}
-		return nil
-	}
-
-	// Enumerate log blobs
+	// Enumerate log blobs in packerlogs container
 	var blobItems []*azblob.BlobItemInternal
 	for marker := (azblob.Marker{}); marker.NotDone(); {
 		blobRes, err := containerURL.ListBlobsFlatSegment(ctx, marker, azblob.ListBlobsSegmentOptions{})
 		if err != nil {
-			storageErr, ok := err.(azblob.StorageError)
-			if !ok || storageErr.Response().StatusCode != http.StatusForbidden {
-				return err
-			}
-			app.Logf("Permission denied, fixing the problem...")
-			err = assignRole()
-			if err != nil {
-				return err
-			}
-			return fmt.Errorf("please wait a few minutes and try again")
+			return err
 		}
 		for i := range blobRes.Segment.BlobItems {
 			blobItems = append(blobItems, &blobRes.Segment.BlobItems[i])
@@ -187,10 +139,10 @@ func (app *AppBuilderShowLogs) RunE(cmd *cobra.Command, args []string) error {
 		marker = blobRes.NextMarker
 	}
 	if len(blobItems) == 0 {
-		return fmt.Errorf("packerlogs container or blob not found")
+		return fmt.Errorf("no log blob found in packerlogs container")
 	}
 
-	// Sort blobs by creation time
+	// Sort log blobs by creation time
 	sort.Slice(blobItems, func(i, j int) bool {
 		var a, b time.Time
 		if blobItems[i].Properties.CreationTime != nil {
@@ -202,19 +154,20 @@ func (app *AppBuilderShowLogs) RunE(cmd *cobra.Command, args []string) error {
 		return a.Before(b)
 	})
 
-	// Select blob to show
+	// Select log blob to show
 	var blobItem *azblob.BlobItemInternal
 	name := app.LogName
 	if name == "" {
 		name = blobItems[len(blobItems)-1].Name
 	}
+	app.Logf("Enumerating log blobs...")
 	for _, item := range blobItems {
 		selected := ""
 		if item.Name == name {
 			blobItem = item
 			selected = " (selected)"
 		}
-		app.Logf("%s %s%s", item.Properties.CreationTime.Format(time.RFC3339), item.Name, selected)
+		app.Logf("  %s %s%s", item.Properties.CreationTime.Format(time.RFC3339), item.Name, selected)
 	}
 
 	// Calc offset
@@ -230,7 +183,7 @@ func (app *AppBuilderShowLogs) RunE(cmd *cobra.Command, args []string) error {
 		offset = 0
 	}
 
-	// Download blob
+	// Download log blob and dump it to stdout
 	blobURL := containerURL.NewAppendBlobURL(blobItem.Name)
 	app.Logf("Getting %s", blobURL)
 	if offset > 0 {
@@ -256,5 +209,6 @@ func (app *AppBuilderShowLogs) RunE(cmd *cobra.Command, args []string) error {
 		}
 		time.Sleep(2 * time.Second)
 	}
+
 	return nil
 }
