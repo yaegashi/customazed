@@ -4,15 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/yaegashi/customazed/store"
-	"github.com/yaegashi/customazed/utils/reflectutil"
-	"github.com/yaegashi/customazed/utils/ssutil"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/msi/mgmt/2018-11-30/msi"
@@ -22,7 +16,13 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
+
+	"github.com/yaegashi/customazed/store"
+	"github.com/yaegashi/customazed/utils/inpututil"
+	"github.com/yaegashi/customazed/utils/reflectutil"
+	"github.com/yaegashi/customazed/utils/ssutil"
 )
 
 const (
@@ -119,11 +119,7 @@ func (app *App) PersistentPreRunE(cmd *cobra.Command, args []string) error {
 	app.ConfigStore = store
 
 	app.Logf("Loading config file %s", app.ConfigFile)
-	b, err := ioutil.ReadFile(app.ConfigFile)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(b, &app.ConfigLoad)
+	err = inpututil.UnmarshalJSONC(app.ConfigFile, &app.ConfigLoad)
 	if err != nil {
 		return err
 	}

@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/Azure/azure-sdk-for-go/services/virtualmachineimagebuilder/mgmt/2020-02-14/virtualmachineimagebuilder"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/spf13/cobra"
 	cmder "github.com/yaegashi/cobra-cmder"
+
+	"github.com/yaegashi/customazed/utils/inpututil"
 )
 
 // AppBuilderCreate is app builder create command
@@ -59,18 +58,8 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var b []byte
-	if app.Input == "-" {
-		b, err = ioutil.ReadAll(os.Stdin)
-	} else {
-		b, err = ioutil.ReadFile(app.Input)
-	}
-	if err != nil {
-		return err
-	}
-
 	var template virtualmachineimagebuilder.ImageTemplate
-	err = json.Unmarshal(b, &template)
+	err = inpututil.UnmarshalJSONC(app.Input, &template)
 	if err != nil {
 		return err
 	}

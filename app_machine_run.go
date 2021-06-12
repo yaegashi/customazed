@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 	"github.com/spf13/cobra"
 	cmder "github.com/yaegashi/cobra-cmder"
+
+	"github.com/yaegashi/customazed/utils/inpututil"
 )
 
 // AppMachineRun is app machine run command
@@ -58,18 +57,8 @@ func (app *AppMachineRun) RunE(cmd *cobra.Command, args []string) error {
 	}
 
 	app.Logf("Loading custom script settings %s", app.Input)
-	var b []byte
-	if app.Input == "-" {
-		b, err = ioutil.ReadAll(os.Stdin)
-	} else {
-		b, err = ioutil.ReadFile(app.Input)
-	}
-	if err != nil {
-		return err
-	}
-
 	var settings *CustomScriptSettings
-	err = json.Unmarshal(b, &settings)
+	err = inpututil.UnmarshalJSONC(app.Input, &settings)
 	if err != nil {
 		return err
 	}
