@@ -38,7 +38,7 @@ func (app *App) NewTemplateVariable(su StorageUploader) *TemplateVariable {
 			if val, ok := os.LookupEnv(key); ok {
 				return val, nil
 			}
-			return "", fmt.Errorf("Environment variable %q not found", key)
+			return "", fmt.Errorf("environment variable %q not found", key)
 		}),
 		"hash": func(s ...string) string { return app.HashID(s...) },
 	}
@@ -58,7 +58,7 @@ func (tv *TemplateVariable) NewFunc(fName string, fCall func(string) (string, er
 			err error
 		)
 		if tv.ref[cacheKey] {
-			err = fmt.Errorf("Cyclic reference %q", cacheKey)
+			err = fmt.Errorf("cyclic reference %q", cacheKey)
 		} else {
 			str, err = fCall(key)
 		}

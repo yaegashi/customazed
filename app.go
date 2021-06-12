@@ -213,7 +213,7 @@ func (app *App) GetTokenWithResource(resource string) (*adal.ServicePrincipalTok
 // Authorize returns ServicePrincipalToken
 func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 	if app.NoLogin {
-		return nil, fmt.Errorf("Login disabled")
+		return nil, fmt.Errorf("login disabled")
 	}
 	switch app.Auth {
 	case "env":
@@ -293,13 +293,13 @@ func (app *App) Authorize() (*adal.ServicePrincipalToken, error) {
 		}
 		return token, nil
 	}
-	return nil, fmt.Errorf("Unknown auth: %s", app.Auth)
+	return nil, fmt.Errorf("unknown auth: %s", app.Auth)
 }
 
 // AuthorizeDeviceFlow runs the device auth flow unconditionally
 func (app *App) AuthorizeDeviceFlow() (*adal.ServicePrincipalToken, error) {
 	if app.NoLogin {
-		return nil, fmt.Errorf("Login disabled")
+		return nil, fmt.Errorf("login disabled")
 	}
 	deviceConfig := auth.NewDeviceFlowConfig(app.Config.ClientID, app.Config.TenantID)
 	token, err := deviceConfig.ServicePrincipalToken()
