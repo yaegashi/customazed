@@ -17,4 +17,5 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/yaegashi/cobra-cmder v0.0.1
+	muzzammil.xyz/jsonc v0.0.0-20201229145248-615b0916ca38
 )
