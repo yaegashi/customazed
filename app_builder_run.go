@@ -41,10 +41,14 @@ func (app *AppBuilderRun) RunE(cmd *cobra.Command, args []string) error {
 	app.Log("Running image build...")
 	templatesClient := virtualmachineimagebuilder.NewVirtualMachineImageTemplatesClient(app.Config.SubscriptionID)
 	templatesClient.Authorizer = authorizer
-	templateFuture, err := templatesClient.Run(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)
+	_, err = templatesClient.Run(ctx, app.Config.Builder.ResourceGroup, app.Config.Builder.BuilderName)
 	if err != nil {
 		return err
 	}
 
-	return app.WaitForCompletion(ctx, &templateFuture, templatesClient.Client)
+	app.Logf("Image build started")
+	app.Logf("To show the image build status:    customazed builder show-status")
+	app.Logf("To watch customization.log output: customazed builder show-logs -F")
+
+	return nil
 }
