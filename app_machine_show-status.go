@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/compute/mgmt/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-03-01/compute"
 	"github.com/spf13/cobra"
 	cmder "github.com/yaegashi/cobra-cmder"
 )
