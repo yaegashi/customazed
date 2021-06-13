@@ -17,7 +17,7 @@ const (
 	RoleNameStorageBlobDataOwner       = "b7e6dc6d-f1e8-4753-8033-0f276bb0955b"
 	RoleNameStorageBlobDataReader      = "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1"
 	RoleNameStorageBlobDataDelegator   = "db58b8e5-c6ad-4a2a-8342-4190687cbf4a"
-	RoleNameImageCreator               = "d3d5cf35-0954-4711-b01a-faa4800979d5"
+	RoleNameImageCreatorNamespace      = "d3d5cf35-0954-4711-b01a-faa4800979d5"
 )
 
 func (app *App) RoleSetup(ctx context.Context) error {
@@ -121,10 +121,14 @@ func (app *App) RoleSetup(ctx context.Context) error {
 		defintionsClient := authorization.NewRoleDefinitionsClient(app.Config.SubscriptionID)
 		defintionsClient.Authorizer = authorizer
 		subscriptionScope := fmt.Sprintf("/subscriptions/%s", app.Config.SubscriptionID)
+		namespace := uuid.MustParse(RoleNameImageCreatorNamespace)
+		roleDefinitionID := uuid.NewSHA1(namespace, []byte(app.Config.SubscriptionID)).String()
+		roleName := fmt.Sprintf("Azure Image Builder Service Image Creation Role for %s", app.Config.SubscriptionID)
+		description := "Azure Image Builder Service access to image resources (created by customazed)"
 		definition := authorization.RoleDefinition{
 			RoleDefinitionProperties: &authorization.RoleDefinitionProperties{
-				RoleName:         to.StringPtr("Azure Image Builder Service Image Creation Role"),
-				Description:      to.StringPtr("Azure Image Builder Service access to image resources"),
+				RoleName:         &roleName,
+				Description:      &description,
 				AssignableScopes: &[]string{subscriptionScope},
 				Permissions: &[]authorization.Permission{
 					{
@@ -141,7 +145,7 @@ func (app *App) RoleSetup(ctx context.Context) error {
 				},
 			},
 		}
-		definition, err = defintionsClient.CreateOrUpdate(ctx, subscriptionScope, RoleNameImageCreator, definition)
+		definition, err = defintionsClient.CreateOrUpdate(ctx, subscriptionScope, roleDefinitionID, definition)
 		if err != nil {
 			return err
 		}
