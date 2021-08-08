@@ -2,7 +2,11 @@
 project_name: customazed
 builds:
   - goos: [linux, darwin, windows]
-    goarch: [amd64]
+    goarch: [amd64, arm64, arm]
+    goarm: [6]
+    ignore:
+      - goos: windows
+        goarch: arm
 archives:
   - name_template: '{{.ProjectName}}_{{if ne (printf "%.8s" .Version) "snapshot"}}v{{end}}{{.Version}}_{{.Os}}_{{.Arch}}'
     format_overrides:

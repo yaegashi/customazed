@@ -1,11 +1,12 @@
-name: Release
+name: Test
 on:
   push:
-    tags:
+    branches:
       - '*'
+
 jobs:
-  release:
-    name: Release Workflow
+  test:
+    name: Test Workflow
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.16
@@ -15,15 +16,15 @@ jobs:
         id: go
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Unshallow
-        run: git fetch --prune --unshallow
       - name: Go Test
         run: go test -v ./...
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: release --rm-dist --snapshot
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          path: dist
   
