@@ -76,6 +76,9 @@ func (app *AppBuilderCreate) RunE(cmd *cobra.Command, args []string) error {
 	}
 
 	var distributes []virtualmachineimagebuilder.BasicImageTemplateDistributor
+	if template.Distribute != nil {
+		distributes = *template.Distribute
+	}
 	if image != nil && !app.Config.Image.SkipCreate {
 		distributes = append(distributes, virtualmachineimagebuilder.ImageTemplateManagedImageDistributor{
 			Type:          virtualmachineimagebuilder.TypeBasicImageTemplateDistributorTypeManagedImage,
