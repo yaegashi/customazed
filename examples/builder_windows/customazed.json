@@ -48,6 +48,7 @@
     "sku": "{{var `sku`}}",
     "osType": "{{var `osType`}}",
     "osState": "generalized",
+    "hyperVGeneration": "V1",
     "replicationRegions": [],
     "excludeFromLatest": false,
     "storageAccountType": "Standard_LRS"

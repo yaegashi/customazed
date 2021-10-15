@@ -123,8 +123,9 @@ func (app *App) GallerySetup(ctx context.Context) error {
 				Offer:     &app.Config.Gallery.Offer,
 				Sku:       &app.Config.Gallery.SKU,
 			},
-			OsState: compute.OperatingSystemStateTypes(app.Config.Gallery.OSState),
-			OsType:  compute.OperatingSystemTypes(app.Config.Gallery.OSType),
+			OsState:          compute.OperatingSystemStateTypes(app.Config.Gallery.OSState),
+			OsType:           compute.OperatingSystemTypes(app.Config.Gallery.OSType),
+			HyperVGeneration: compute.HyperVGeneration(app.Config.Gallery.HyperVGeneration),
 		},
 	}
 	galleryImageFuture, err := galleryImagesClient.CreateOrUpdate(ctx, app.Config.Gallery.ResourceGroup, app.Config.Gallery.GalleryName, app.Config.Gallery.GalleryImageName, galleryImage)

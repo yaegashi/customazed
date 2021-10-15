@@ -49,6 +49,7 @@ type GalleryConfig struct {
 	SKU                string   `json:"sku,omitempty"`
 	OSState            string   `json:"osState,omitempty"`
 	OSType             string   `json:"osType,omitempty"`
+	HyperVGeneration   string   `json:"hyperVGeneration,omitempty"`
 	ReplicationRegions []string `json:"replicationRegions,omitempty"`
 	ExcludeFromLatest  bool     `json:"excludeFromLatest,omitempty"`
 	StorageAccountType string   `json:"storageAccountType,omitempty"`
